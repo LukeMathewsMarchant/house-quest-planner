@@ -1,41 +1,61 @@
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Play, DollarSign, Home, Tag, Key } from "lucide-react";
+import { DollarSign, Home, Tag, Key } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-const categories = [
+export type TutorialCategoryId = "save" | "buy" | "sell" | "rent" | "all";
+
+const categories: {
+  id: TutorialCategoryId;
+  title: string;
+  icon: typeof DollarSign;
+  color: string;
+  videos: { title: string; duration: string; videoId: string }[];
+}[] = [
   {
+    id: "save",
     title: "How to Save",
     icon: DollarSign,
     color: "bg-primary/10 text-primary",
     videos: [
-      { title: "Building Your Down Payment Fund", duration: "8:24" },
-      { title: "Cutting Expenses That Matter", duration: "6:12" },
+      { title: "Building Your Down Payment Fund", duration: "8:24", videoId: "xGE4a9IMZwM" },
+      { title: "Cutting Expenses That Matter", duration: "6:12", videoId: "xBtKMup3jVE" },
     ],
   },
   {
+    id: "buy",
     title: "How to Buy",
     icon: Home,
     color: "bg-accent/10 text-accent",
     videos: [
-      { title: "Understanding the Buying Process", duration: "12:05" },
-      { title: "Making Your First Offer", duration: "9:30" },
+      { title: "Understanding the Buying Process", duration: "12:05", videoId: "xGE4a9IMZwM" },
+      { title: "Making Your First Offer", duration: "9:30", videoId: "xBtKMup3jVE" },
     ],
   },
   {
+    id: "sell",
     title: "How to Sell",
     icon: Tag,
     color: "bg-primary/10 text-primary",
     videos: [
-      { title: "Preparing Your Home for Sale", duration: "7:45" },
-      { title: "Pricing Strategies That Work", duration: "10:18" },
+      { title: "Preparing Your Home for Sale", duration: "7:45", videoId: "xGE4a9IMZwM" },
+      { title: "Pricing Strategies That Work", duration: "10:18", videoId: "xBtKMup3jVE" },
     ],
   },
   {
+    id: "rent",
     title: "How to Rent",
     icon: Key,
     color: "bg-accent/10 text-accent",
     videos: [
-      { title: "Renting vs. Buying: What's Right?", duration: "11:02" },
-      { title: "Understanding Lease Agreements", duration: "8:50" },
+      { title: "Renting vs. Buying: What's Right?", duration: "11:02", videoId: "xGE4a9IMZwM" },
+      { title: "Understanding Lease Agreements", duration: "8:50", videoId: "xBtKMup3jVE" },
     ],
   },
 ];
@@ -46,15 +66,41 @@ const fadeUp = {
 };
 
 export default function TutorialsPage() {
+  const [categoryFilter, setCategoryFilter] = useState<TutorialCategoryId>("all");
+
+  const filteredCategories = useMemo(() => {
+    if (categoryFilter === "all") return categories;
+    return categories.filter((cat) => cat.id === categoryFilter);
+  }, [categoryFilter]);
+
   return (
     <div className="container py-10 max-w-5xl">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
-        <h1 className="text-3xl font-bold mb-2">Educational Videos</h1>
-        <p className="text-muted-foreground">Learn the essentials of home buying, selling, and everything in between.</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Educational Videos</h1>
+            <p className="text-muted-foreground">Learn the essentials of home buying, selling, and everything in between.</p>
+          </div>
+          <div className="w-full sm:w-48 shrink-0">
+            <Select value={categoryFilter} onValueChange={(v) => setCategoryFilter(v as TutorialCategoryId)}>
+              <SelectTrigger>
+                <SelectValue placeholder="What do you need help with?" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All topics</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.id}>
+                    {cat.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </motion.div>
 
       <motion.div initial="hidden" animate="visible" className="space-y-10">
-        {categories.map((cat, ci) => (
+        {filteredCategories.map((cat, ci) => (
           <motion.div key={cat.title} variants={fadeUp} custom={ci}>
             <div className="flex items-center gap-3 mb-4">
               <div className={`w-10 h-10 rounded-lg ${cat.color} flex items-center justify-center`}>
@@ -66,14 +112,18 @@ export default function TutorialsPage() {
               {cat.videos.map((vid) => (
                 <div
                   key={vid.title}
-                  className="group bg-card rounded-xl overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 cursor-pointer hover:-translate-y-0.5 flex"
+                  className="bg-card rounded-xl overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 flex flex-col"
                 >
-                  <div className={`w-28 shrink-0 ${cat.color} bg-opacity-20 flex items-center justify-center`}>
-                    <div className="w-10 h-10 rounded-full bg-card/70 flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Play className="h-4 w-4 ml-0.5" />
-                    </div>
+                  <div className="aspect-video w-full bg-muted">
+                    <iframe
+                      src={`https://www.youtube.com/embed/${vid.videoId}`}
+                      title={vid.title}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      className="w-full h-full"
+                    />
                   </div>
-                  <div className="p-4 flex flex-col justify-center">
+                  <div className="p-4">
                     <p className="font-semibold text-sm mb-1">{vid.title}</p>
                     <p className="text-xs text-muted-foreground">{vid.duration}</p>
                   </div>

@@ -1,8 +1,25 @@
+import { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { DollarSign, Home, TrendingUp, Building2, GraduationCap } from "lucide-react";
+import { DollarSign, Home, TrendingUp, Building2, GraduationCap, Info } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
+import { getBudgetSummary } from "@/lib/budget";
+
+const STORAGE_GOAL = "hbh_monthly_goal";
+const STORAGE_PROGRESS = "hbh_monthly_progress";
+const STORAGE_INCOME = "hbh_monthly_income";
+
+function loadNumber(key: string, fallback: number): number {
+  try {
+    const v = localStorage.getItem(key);
+    if (v == null) return fallback;
+    const n = Number(v);
+    return Number.isFinite(n) && n >= 0 ? n : fallback;
+  } catch {
+    return fallback;
+  }
+}
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -10,9 +27,18 @@ const fadeUp = {
 };
 
 export default function DashboardPage() {
-  const contribution = 2000;
-  const goalContribution = 5000;
-  const progressPercent = (contribution / goalContribution) * 100;
+  const [contribution, setContribution] = useState(2000);
+  const [goalContribution, setGoalContribution] = useState(5000);
+  const [income, setIncome] = useState(0);
+
+  useEffect(() => {
+    setContribution(loadNumber(STORAGE_PROGRESS, 2000));
+    setGoalContribution(loadNumber(STORAGE_GOAL, 5000));
+    setIncome(loadNumber(STORAGE_INCOME, 0));
+  }, []);
+
+  const budget = useMemo(() => getBudgetSummary(income), [income]);
+  const progressPercent = goalContribution > 0 ? (contribution / goalContribution) * 100 : 0;
 
   return (
     <div className="container py-10 max-w-3xl">
@@ -35,8 +61,8 @@ export default function DashboardPage() {
         {/* Stats */}
         <motion.div variants={fadeUp} custom={2} className="grid sm:grid-cols-3 gap-4">
           {[
-            { icon: Home, label: "Monthly Contribution", value: "$2,000", color: "text-primary" },
-            { icon: TrendingUp, label: "Possible Price Range", value: "$400K – $500K", color: "text-accent" },
+            { icon: Home, label: "Monthly Contribution", value: `$${contribution.toLocaleString()}`, color: "text-primary" },
+            { icon: TrendingUp, label: "Possible Price Range", value: budget.priceRangeFormatted, color: "text-accent" },
             { icon: DollarSign, label: "Est. Mortgage Rate", value: "6.25%", color: "text-primary" },
           ].map((stat, i) => (
             <div
@@ -54,8 +80,22 @@ export default function DashboardPage() {
           ))}
         </motion.div>
 
+        {/* Why this range? */}
+        <motion.div variants={fadeUp} custom={3} className="bg-card rounded-xl p-6 shadow-card border border-primary/10">
+          <div className="flex items-center gap-2 mb-3">
+            <Info className="h-5 w-5 text-primary shrink-0" />
+            <h2 className="text-lg font-semibold">Why this range fits you</h2>
+          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed">{budget.explanation}</p>
+          {!budget.hasValidIncome && (
+            <p className="text-sm text-primary mt-3">
+              <Link to="/profile" className="underline font-medium">Add your monthly income in Profile</Link> to see a personalized range and explanation.
+            </p>
+          )}
+        </motion.div>
+
         {/* CTA buttons */}
-        <motion.div variants={fadeUp} custom={3} className="grid sm:grid-cols-2 gap-4">
+        <motion.div variants={fadeUp} custom={4} className="grid sm:grid-cols-2 gap-4">
           <Button asChild size="lg" className="h-auto py-4 justify-start gap-3">
             <Link to="/listings">
               <Building2 className="h-5 w-5" />
