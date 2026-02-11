@@ -1,5 +1,13 @@
 import { motion } from "framer-motion";
-import { MapPin, Bed, Bath, Square } from "lucide-react";
+import { Bed, Bath, Square } from "lucide-react";
+import home1 from "@/assets/home-1.jpg";
+import home2 from "@/assets/home-2.jpg";
+import home3 from "@/assets/home-3.jpg";
+import home4 from "@/assets/home-4.jpg";
+import home5 from "@/assets/home-5.jpg";
+import home6 from "@/assets/home-6.jpg";
+
+const homeImages = [home1, home2, home3, home4, home5, home6];
 
 const listings = [
   { id: 1, address: "12345 W Teal St", city: "Eagle, ID", price: 450000, beds: 4, baths: 3, sqft: 2100 },
@@ -14,12 +22,6 @@ const fadeUp = {
   hidden: { opacity: 0, y: 20 },
   visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.08, duration: 0.4 } }),
 };
-
-const colors = [
-  "from-primary/20 to-primary/5",
-  "from-accent/20 to-accent/5",
-  "from-primary/15 to-accent/5",
-];
 
 export default function ListingsPage() {
   return (
@@ -37,11 +39,13 @@ export default function ListingsPage() {
             custom={i}
             className="group bg-card rounded-xl overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 cursor-pointer hover:-translate-y-1"
           >
-            {/* Color placeholder for house image */}
-            <div className={`h-40 bg-gradient-to-br ${colors[i % colors.length]} flex items-center justify-center`}>
-              <div className="w-16 h-16 rounded-full bg-card/60 flex items-center justify-center">
-                <MapPin className="h-7 w-7 text-primary" />
-              </div>
+            {/* House image */}
+            <div className="h-40 overflow-hidden bg-muted">
+              <img
+                src={homeImages[i]}
+                alt={home.address}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
             </div>
             <div className="p-5">
               <p className="text-2xl font-bold text-primary mb-1">
