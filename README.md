@@ -50,6 +50,10 @@ npm run dev
 - Click on "New codespace" to launch a new Codespace environment.
 - Edit files directly within the Codespace and commit and push your changes once you're done.
 
+## Edit here or rebuild in another stack?
+
+**Recommendation: keep editing this codebase.** It’s standard React + Vite + TypeScript + shadcn/ui + Tailwind — no Lovable lock-in. You get a solid UI (shadcn), fast dev experience (Vite), and full control. Replicating in another stack would duplicate work without real benefit unless you need a different runtime (e.g. server-rendered with Next.js).
+
 ## What technologies are used for this project?
 
 This project is built with:
@@ -62,7 +66,22 @@ This project is built with:
 
 ## How can I deploy this project?
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+**Option A – Lovable**  
+Open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click Share → Publish.
+
+**Option B – Deploy the built app yourself (Netlify, Vercel, etc.)**
+
+1. **Build the app** (required – don’t upload raw source):
+   ```sh
+   npm install
+   npm run build
+   ```
+2. **Deploy the `dist/` folder** (not the whole project). Point your host’s “build output” or “publish directory” to `dist`.
+3. **SPA routing**: The app uses client-side routes (`/`, `/dashboard`, `/listings`, `/tutorials`). The repo includes:
+   - **Netlify**: `public/_redirects` (copied into `dist` on build) so all routes serve `index.html`.
+   - **Vercel**: `vercel.json` with a rewrite so all routes serve `index.html`.
+   For other hosts, configure “SPA fallback” or “rewrite all routes to index.html” so direct visits and refreshes on `/dashboard`, etc. don’t 404.
+4. **GitHub Pages (subpath)**: If the site is at `https://username.github.io/repo-name/`, set `base: '/repo-name/'` in `vite.config.ts` and rebuild.
 
 ## Can I connect a custom domain to my Lovable project?
 

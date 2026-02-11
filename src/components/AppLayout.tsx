@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, LayoutDashboard, Building2, GraduationCap, Menu, X } from "lucide-react";
+import { Home, LayoutDashboard, Building2, GraduationCap, User, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const navItems = [
@@ -8,6 +8,7 @@ const navItems = [
   { title: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
   { title: "Listings", path: "/listings", icon: Building2 },
   { title: "Tutorials", path: "/tutorials", icon: GraduationCap },
+  { title: "Profile", path: "/profile", icon: User },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -21,7 +22,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="container flex h-16 items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <Home className="h-6 w-6 text-primary" />
-            <span className="font-display text-xl font-bold text-foreground">HomeReady</span>
+            <span className="font-display text-xl font-bold text-foreground">HBH</span>
           </Link>
 
           {/* Desktop nav */}

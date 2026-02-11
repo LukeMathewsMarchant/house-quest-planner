@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/hero-home.jpg";
 
 const testimonials = [
-  { name: "Spencer Hilton", role: "First-time Buyer", quote: "HomeReady made home buying feel possible, even on my budget.", avatar: "SH" },
+  { name: "Spencer Hilton", role: "First-time Buyer", quote: "HBH made home buying feel possible, even on my budget.", avatar: "SH" },
   { name: "James Gaskin", role: "Young Professional", quote: "The budget tools helped me understand exactly what I could afford.", avatar: "JG" },
   { name: "Maria Santos", role: "Recent Graduate", quote: "I never thought I'd own a home at 26. This app changed everything.", avatar: "MS" },
 ];
@@ -81,22 +81,26 @@ export default function LandingPage() {
           className="grid sm:grid-cols-3 gap-8"
         >
           {[
-            { icon: DollarSign, title: "Budget Planning", desc: "See your contribution, price range, and mortgage estimate at a glance." },
-            { icon: BookOpen, title: "Learn As You Go", desc: "Curated video tutorials on saving, buying, selling, and renting." },
-            { icon: Star, title: "Listings in Your Budget", desc: "Browse homes filtered to what you can actually afford." },
+            { icon: DollarSign, title: "Budget Planning", desc: "See your contribution, price range, and mortgage estimate at a glance.", to: "/dashboard" },
+            { icon: BookOpen, title: "Learn As You Go", desc: "Video tutorials on saving, mortgages, inspecting a home, and the buying process.", to: "/tutorials" },
+            { icon: Star, title: "Listings in Your Budget", desc: "Browse homes filtered to what you can actually afford.", to: "/listings" },
           ].map((f, i) => (
-            <motion.div
-              key={f.title}
-              variants={fadeUp}
-              custom={i}
-              className="group bg-card rounded-xl p-8 shadow-card hover:shadow-card-hover transition-shadow duration-300 text-center"
-            >
-              <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-5 group-hover:bg-primary/20 transition-colors">
-                <f.icon className="h-7 w-7 text-primary" />
-              </div>
-              <h3 className="font-display text-xl font-semibold mb-3">{f.title}</h3>
-              <p className="text-muted-foreground">{f.desc}</p>
-            </motion.div>
+            <Link key={f.title} to={f.to}>
+              <motion.div
+                variants={fadeUp}
+                custom={i}
+                className="group bg-card rounded-xl p-8 shadow-card hover:shadow-card-hover transition-all duration-300 text-center cursor-pointer hover:-translate-y-0.5"
+              >
+                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-5 group-hover:bg-primary/20 transition-colors">
+                  <f.icon className="h-7 w-7 text-primary" />
+                </div>
+                <h3 className="font-display text-xl font-semibold mb-3">{f.title}</h3>
+                <p className="text-muted-foreground">{f.desc}</p>
+                <span className="inline-flex items-center text-primary text-sm font-medium mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                  Get started <ArrowRight className="ml-1 h-4 w-4" />
+                </span>
+              </motion.div>
+            </Link>
           ))}
         </motion.div>
       </section>
@@ -141,7 +145,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="border-t py-8">
         <div className="container text-center text-sm text-muted-foreground">
-          © 2026 HomeReady. Your journey to homeownership starts here.
+          © 2026 HBH. Your journey to homeownership starts here.
         </div>
       </footer>
     </div>

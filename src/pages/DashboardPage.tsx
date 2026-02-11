@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { DollarSign, Home, TrendingUp, Building2, GraduationCap } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { CircularProgress } from "@/components/ui/circular-progress";
 import { Button } from "@/components/ui/button";
 
 const fadeUp = {
@@ -10,9 +11,9 @@ const fadeUp = {
 };
 
 export default function DashboardPage() {
-  const contribution = 2000;
-  const goalContribution = 5000;
-  const progressPercent = (contribution / goalContribution) * 100;
+  const saved = 32000;
+  const goal = 60000;
+  const progressPercent = (saved / goal) * 100;
 
   return (
     <div className="container py-10 max-w-3xl">
@@ -22,14 +23,28 @@ export default function DashboardPage() {
           <p className="text-muted-foreground">Track your savings and see what you can afford.</p>
         </motion.div>
 
-        {/* Progress bar */}
-        <motion.div variants={fadeUp} custom={1} className="bg-card rounded-xl p-6 shadow-card space-y-4">
-          <div className="flex justify-between items-end mb-1">
-            <span className="text-sm font-medium text-muted-foreground">Monthly Savings</span>
-            <span className="text-2xl font-bold text-primary">${contribution.toLocaleString()} <span className="text-sm font-normal text-muted-foreground">/ ${goalContribution.toLocaleString()}</span></span>
+        {/* Circular Progress */}
+        <motion.div variants={fadeUp} custom={1} className="bg-card rounded-xl p-8 shadow-card">
+          <div className="flex flex-col items-center space-y-6">
+            <CircularProgress value={progressPercent} size={200} strokeWidth={12}>
+              <Home className="h-12 w-12 text-primary" />
+            </CircularProgress>
+            
+            <div className="text-center space-y-2">
+              <h2 className="text-2xl font-bold">Your Savings Progress</h2>
+              <p className="text-lg text-muted-foreground">
+                ${saved.toLocaleString()} of ${goal.toLocaleString()} saved
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {Math.round(progressPercent)}% toward your down payment goal
+              </p>
+            </div>
+
+            {/* Linear progress bar below */}
+            <div className="w-full max-w-md space-y-2">
+              <Progress value={progressPercent} className="h-2" />
+            </div>
           </div>
-          <Progress value={progressPercent} className="h-3" />
-          <p className="text-xs text-muted-foreground">You're {progressPercent}% of the way to your monthly savings goal!</p>
         </motion.div>
 
         {/* Stats */}
