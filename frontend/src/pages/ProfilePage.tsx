@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { DollarSign, CreditCard, Calendar, MapPin, TrendingUp, Save } from "lucide-react";
+import { DollarSign, CreditCard, Calendar, MapPin, TrendingUp, Save, Percent } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +14,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useAuth } from "@/contexts/AuthContext";
+import { getProgress, updateProgress } from "@/lib/api";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -19,27 +23,80 @@ const fadeUp = {
 };
 
 export default function ProfilePage() {
-  const [budgetHomePrice, setBudgetHomePrice] = useState("450000");
-  const [monthlyIncome, setMonthlyIncome] = useState("6000");
-  const [monthlyExpenses, setMonthlyExpenses] = useState("3500");
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const [budgetHomePrice, setBudgetHomePrice] = useState("");
+  const [downPaymentPct, setDownPaymentPct] = useState("");
+  const [monthlyIncome, setMonthlyIncome] = useState("");
+  const [monthlyExpenses, setMonthlyExpenses] = useState("");
   const [creditScore, setCreditScore] = useState([720]);
   const [timeHorizon, setTimeHorizon] = useState("");
   const [zipCodes, setZipCodes] = useState("");
 
+  const { data: progress, isLoading } = useQuery({
+    queryKey: ["progress", user?.UserID],
+    queryFn: () => getProgress(user!.UserID),
+    enabled: !!user?.UserID,
+  });
+
+  useEffect(() => {
+    if (!progress) return;
+    setBudgetHomePrice(progress.budget != null ? String(progress.budget) : "");
+    setDownPaymentPct(
+      progress.downPaymentPercentage != null ? String(progress.downPaymentPercentage) : ""
+    );
+    setMonthlyIncome(progress.monthlyIncome != null ? String(progress.monthlyIncome) : "");
+    setMonthlyExpenses(progress.monthlyExpenses != null ? String(progress.monthlyExpenses) : "");
+    setCreditScore([progress.creditScore ?? 720]);
+    setTimeHorizon(progress.timeHorizon ?? "");
+    setZipCodes(progress.desiredZipCodes ?? "");
+  }, [progress]);
+
+  const saveMutation = useMutation({
+    mutationFn: () =>
+      updateProgress(user!.UserID, {
+        budget: budgetHomePrice ? parseInt(budgetHomePrice, 10) : null,
+        downPaymentPercentage: downPaymentPct ? parseFloat(downPaymentPct) : null,
+        amountSaved: progress?.amountSaved ?? 0,
+        creditScore: creditScore[0],
+        monthlyIncome: monthlyIncome ? parseInt(monthlyIncome, 10) : null,
+        monthlyExpenses: monthlyExpenses ? parseInt(monthlyExpenses, 10) : null,
+        timeHorizon: timeHorizon || null,
+        desiredZipCodes: zipCodes.trim() || null,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["progress", user?.UserID] });
+      alert("Profile saved successfully!");
+    },
+  });
+
+  useEffect(() => {
+    if (user == null) navigate("/login", { replace: true });
+  }, [user, navigate]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Save to database later
-    console.log({
-      budgetHomePrice,
-      monthlyIncome,
-      monthlyExpenses,
-      creditScore: creditScore[0],
-      timeHorizon,
-      zipCodes: zipCodes.split(",").map((z) => z.trim()).filter(Boolean),
-    });
-    // Show success message (could add toast here)
-    alert("Profile saved successfully!");
+    saveMutation.mutate();
   };
+
+  if (!user) return null;
+  if (isLoading) {
+    return (
+      <div className="container py-10 max-w-3xl">
+        <p className="text-muted-foreground">Loading your profile…</p>
+      </div>
+    );
+  }
+
+  const monthlySavings =
+    monthlyIncome && monthlyExpenses
+      ? parseFloat(monthlyIncome) - parseFloat(monthlyExpenses)
+      : null;
+  const goalFromDownPct =
+    budgetHomePrice && downPaymentPct
+      ? (parseInt(budgetHomePrice, 10) * parseFloat(downPaymentPct)) / 100
+      : null;
 
   return (
     <div className="container py-10 max-w-3xl">
@@ -52,32 +109,62 @@ export default function ProfilePage() {
         </motion.div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Budget Home Price */}
+          {/* Budget Home Price & Down Payment % */}
           <motion.div variants={fadeUp} custom={1} className="bg-card rounded-xl p-6 shadow-card space-y-4">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                 <DollarSign className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold">Budget Home Price</h2>
-                <p className="text-sm text-muted-foreground">Your target home purchase price</p>
+                <h2 className="text-lg font-semibold">Budget & Down Payment</h2>
+                <p className="text-sm text-muted-foreground">
+                  Your target home price and down payment % set your savings goal on the dashboard.
+                </p>
               </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="budget-price">Maximum Home Price</Label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
-                <Input
-                  id="budget-price"
-                  type="number"
-                  value={budgetHomePrice}
-                  onChange={(e) => setBudgetHomePrice(e.target.value)}
-                  className="pl-7"
-                  placeholder="450000"
-                  min="0"
-                />
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="budget-price">Maximum Home Price</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                  <Input
+                    id="budget-price"
+                    type="number"
+                    value={budgetHomePrice}
+                    onChange={(e) => setBudgetHomePrice(e.target.value)}
+                    className="pl-7"
+                    placeholder="450000"
+                    min="0"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="down-payment-pct">Down Payment %</Label>
+                <div className="relative">
+                  <Percent className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="down-payment-pct"
+                    type="number"
+                    value={downPaymentPct}
+                    onChange={(e) => setDownPaymentPct(e.target.value)}
+                    className="pl-9"
+                    placeholder="20"
+                    min="0"
+                    max="100"
+                    step="0.5"
+                  />
+                </div>
               </div>
             </div>
+            {goalFromDownPct != null && goalFromDownPct > 0 && (
+              <p className="text-sm text-muted-foreground pt-2 border-t">
+                Your down payment goal:{" "}
+                <span className="font-semibold text-foreground">
+                  ${Math.round(goalFromDownPct).toLocaleString()}
+                </span>{" "}
+                (shown on Dashboard)
+              </p>
+            )}
           </motion.div>
 
           {/* Monthly Income & Expenses */}
@@ -123,10 +210,11 @@ export default function ProfilePage() {
                 </div>
               </div>
             </div>
-            {monthlyIncome && monthlyExpenses && (
+            {monthlySavings != null && (
               <p className="text-sm text-muted-foreground pt-2 border-t">
-                Monthly savings: <span className="font-semibold text-foreground">
-                  ${(parseFloat(monthlyIncome) - parseFloat(monthlyExpenses)).toLocaleString()}
+                Monthly savings:{" "}
+                <span className="font-semibold text-foreground">
+                  ${monthlySavings.toLocaleString()}
                 </span>
               </p>
             )}
@@ -226,17 +314,15 @@ export default function ProfilePage() {
                 onChange={(e) => setZipCodes(e.target.value)}
                 placeholder="83616, 83642, 83646 (comma-separated)"
               />
-              <p className="text-xs text-muted-foreground">
-                Enter multiple zip codes separated by commas
-              </p>
+              <p className="text-xs text-muted-foreground">Enter multiple zip codes separated by commas</p>
             </div>
           </motion.div>
 
           {/* Submit Button */}
           <motion.div variants={fadeUp} custom={6}>
-            <Button type="submit" size="lg" className="w-full sm:w-auto">
+            <Button type="submit" size="lg" className="w-full sm:w-auto" disabled={saveMutation.isPending}>
               <Save className="h-4 w-4 mr-2" />
-              Save Profile
+              {saveMutation.isPending ? "Saving…" : "Save Profile"}
             </Button>
           </motion.div>
         </form>
