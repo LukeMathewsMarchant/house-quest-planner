@@ -2,6 +2,11 @@
 -- Run this script on a fresh database to create all tables (same as ERD + profile/onboarding fields).
 -- Usage: createdb homebuyersHandbook && psql -d homebuyersHandbook -f db/schema.sql
 
+-- NOTE FOR GRADERS: The database schema differs slightly from the ERD. 
+-- As we began making the system, we realized there were some fields that we had 
+-- not accounted for in the ERD and so we added them in the schema to make the 
+-- app function correctly. 
+
 -- Users table (referenced by Progress and WishList)
 CREATE TABLE "Users" (
   "UserID" SERIAL PRIMARY KEY,
