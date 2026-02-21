@@ -1,92 +1,65 @@
-# Welcome to your Lovable project
-
 ## Project info
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+NOTE FOR GRADERS: The database schema differs slightly from the ERD. As we began making the system, we realized there were some fields that we had not accounted for in the ERD and so we added them in the schema to make the app function correctly.
 
-## How can I edit this code?
 
-There are several ways of editing your application.
+App Summary. This application helps young professionals who want to buy their first home but feel overwhelmed by the financial and logistical steps involved. Many first‑time buyers struggle to understand how much they need to save, what homes fit their budget, and how to prepare for the buying process. Our primary user is a young professional seeking a simple, personalized, and confidence‑building guide to homeownership. The app provides a money‑saving dashboard to help users track their progress toward a down payment. It also includes a personal account area where users can store their information and receive tailored recommendations. A budget‑filtered house listings page shows realistic home options based on what the user can afford. Additionally, an educational video library offers financial and home‑buying advice, with filters that let users explore topics at their own pace. Together, these features make the path to homeownership feel more approachable, organized, and achievable. (Abbie)
 
-**Use Lovable**
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+Tech Stack. Frontend Layer
+HTML5 – Page structure and layout
+CSS3 – Styling, layout, and responsive design
+JavaScript – Client‑side interactivity
+TypeScript – Type‑safe scripting for more reliable frontend logic
+Vite – Frontend tooling for fast development and bundling
+vite-env.d.ts – TypeScript environment declarations used by Vite
+Backend Layer
+Node.js – JavaScript runtime powering the server
+Express.js – Backend framework for routing and API endpoints
+server.js – Main server file that initializes Express, handles routes, and connects to the database
+Environment Files:
+.env – Stores sensitive configuration (DB URL, API keys)
+.env.example – Template showing required environment variables
+Database Layer
+PostgreSQL – Relational database storing user info, budgets, house listings, and preferences (Abbie)
 
-Changes made via Lovable will be committed automatically to this repo.
+Architecture Diagram. Include a system architecture diagram showing the user, frontend, backend, database, and any external services, with labeled arrows indicating how the components communicate. (Ryan)
 
-**Use your preferred IDE**
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Prerequisites. List all required software needed to run the project locally (e.g., Node.js, PostgreSQL, and psql available in the system PATH). Provide links to official installation instructions and include commands to verify installation. (Grant)
+Installation and Setup. Provide clear step-by-step instructions for installing dependencies, creating the database, running schema.sql and seed.sql, and configuring environment variables if required. (Grant)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
-Follow these steps:
+Here is how you can run the application
+From the root directory type “cd backend” in the terminal
+Then type “npm install”
+Then “npm run dev” this will start the backend
+Then open a separate terminal (while the other is still running)
+From the root type “cd frontend” if you are currently in the backend folder you can type “cd ..” to get back to the root
+Then type “npm install”
+Then type “npm run dev”
+Then you can open the application at http://localhost:8080/
+We actually went ahead and created several features connecting to the database because it made more sense from a cohesive ux experience. The first is account creation and signing in. 
+Click “Sign in” in the top right corner or the big “Start your journey” button
+Then click “create account”
+Enter email, password, and zip then click create account
+Enter personalized plan information.
+Amount Saved
+Maximum home price
+Down payment percentage
+Monthly income and monthly expenses
+Credit Score
+Timeline
+Preferred areas
+Then click create my plan
+Then the system will take you to the dashboard and you can see that the data has been saved
+You can refresh the page and it will stay the same
+Enter a contribution amount and click add
+You can see it updates the savings progress. You can refresh the page and it will stay the same
+You can also click on profile and update any of the information there and click save changes and it will persist.
+For more testing you can click sign out.
+Then sign in with the credentials you made
+You will see that all of the information you entered earlier is still there. 
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## Edit here or rebuild in another stack?
-
-**Recommendation: keep editing this codebase.** It’s standard React + Vite + TypeScript + shadcn/ui + Tailwind — no Lovable lock-in. You get a solid UI (shadcn), fast dev experience (Vite), and full control. Replicating in another stack would duplicate work without real benefit unless you need a different runtime (e.g. server-rendered with Next.js).
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-**Option A – Lovable**  
-Open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click Share → Publish.
-
-**Option B – Deploy the built app yourself (Netlify, Vercel, etc.)**
-
-1. **Build the app** (required – don’t upload raw source):
-   ```sh
-   npm install
-   npm run build
-   ```
-2. **Deploy the `dist/` folder** (not the whole project). Point your host’s “build output” or “publish directory” to `dist`.
-3. **SPA routing**: The app uses client-side routes (`/`, `/dashboard`, `/listings`, `/tutorials`). The repo includes:
-   - **Netlify**: `public/_redirects` (copied into `dist` on build) so all routes serve `index.html`.
-   - **Vercel**: `vercel.json` with a rewrite so all routes serve `index.html`.
-   For other hosts, configure “SPA fallback” or “rewrite all routes to index.html” so direct visits and refreshes on `/dashboard`, etc. don’t 404.
-4. **GitHub Pages (subpath)**: If the site is at `https://username.github.io/repo-name/`, set `base: '/repo-name/'` in `vite.config.ts` and rebuild.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
