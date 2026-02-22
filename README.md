@@ -3,7 +3,7 @@
 NOTE FOR GRADERS: The database schema differs slightly from the ERD. As we began making the system, we realized there were some fields that we had not accounted for in the ERD and so we added them in the schema to make the app function correctly.
 
 
-App Summary. This application helps young professionals who want to buy their first home but feel overwhelmed by the financial and logistical steps involved. Many first‑time buyers struggle to understand how much they need to save, what homes fit their budget, and how to prepare for the buying process. Our primary user is a young professional seeking a simple, personalized, and confidence‑building guide to homeownership. The app provides a money‑saving dashboard to help users track their progress toward a down payment. It also includes a personal account area where users can store their information and receive tailored recommendations. A budget‑filtered house listings page shows realistic home options based on what the user can afford. Additionally, an educational video library offers financial and home‑buying advice, with filters that let users explore topics at their own pace. Together, these features make the path to homeownership feel more approachable, organized, and achievable. (Abbie)
+App Summary. This application helps young professionals who want to buy their first home but feel overwhelmed by the financial and logistical steps involved. Many first‑time buyers struggle to understand how much they need to save, what homes fit their budget, and how to prepare for the buying process. Our primary user is a young professional seeking a simple, personalized, and confidence‑building guide to homeownership. The app provides a money‑saving dashboard to help users track their progress toward a down payment. It also includes a personal account area where users can store their information and receive tailored recommendations. A budget‑filtered house listings page shows realistic home options based on what the user can afford. Additionally, an educational video library offers financial and home‑buying advice, with filters that let users explore topics at their own pace. Together, these features make the path to homeownership feel more approachable, organized, and achievable. 
 
 
 Tech Stack. Frontend Layer
@@ -21,10 +21,9 @@ Environment Files:
 .env – Stores sensitive configuration (DB URL, API keys)
 .env.example – Template showing required environment variables
 Database Layer
-PostgreSQL – Relational database storing user info, budgets, house listings, and preferences (Abbie)
+PostgreSQL – Relational database storing user info, budgets, house listings, and preferences
 
-Architecture Diagram. Include a system architecture diagram showing the user, frontend, backend, database, and any external services, with labeled arrows indicating how the components communicate. (Ryan)
-
+Architecture Diagram. Include a system architecture diagram showing the user, frontend, backend, database, and any external services, with labeled arrows indicating how the components communicate.
 ---
 
 ### Prerequisites
