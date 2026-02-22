@@ -25,41 +25,106 @@ PostgreSQL – Relational database storing user info, budgets, house listings, a
 
 Architecture Diagram. Include a system architecture diagram showing the user, frontend, backend, database, and any external services, with labeled arrows indicating how the components communicate. (Ryan)
 
+---
 
-Prerequisites. List all required software needed to run the project locally (e.g., Node.js, PostgreSQL, and psql available in the system PATH). Provide links to official installation instructions and include commands to verify installation. (Grant)
-Installation and Setup. Provide clear step-by-step instructions for installing dependencies, creating the database, running schema.sql and seed.sql, and configuring environment variables if required. (Grant)
+### Prerequisites
 
+You need the following installed and available in your system PATH to run the project locally:
 
-Here is how you can run the application
-From the root directory type “cd backend” in the terminal
-Then type “npm install”
-Then “npm run dev” this will start the backend
-Then open a separate terminal (while the other is still running)
-From the root type “cd frontend” if you are currently in the backend folder you can type “cd ..” to get back to the root
-Then type “npm install”
-Then type “npm run dev”
-Then you can open the application at http://localhost:8080/
-We actually went ahead and created several features connecting to the database because it made more sense from a cohesive ux experience. The first is account creation and signing in. 
-Click “Sign in” in the top right corner or the big “Start your journey” button
-Then click “create account”
-Enter email, password, and zip then click create account
-Enter personalized plan information.
-Amount Saved
-Maximum home price
-Down payment percentage
-Monthly income and monthly expenses
-Credit Score
-Timeline
-Preferred areas
-Then click create my plan
-Then the system will take you to the dashboard and you can see that the data has been saved
-You can refresh the page and it will stay the same
-Enter a contribution amount and click add
-You can see it updates the savings progress. You can refresh the page and it will stay the same
-You can also click on profile and update any of the information there and click save changes and it will persist.
-For more testing you can click sign out.
-Then sign in with the credentials you made
-You will see that all of the information you entered earlier is still there. 
+| Software | Purpose | Install | Verify |
+|----------|---------|--------|--------|
+| **Node.js** (v18 or later recommended) | JavaScript runtime for frontend and backend | [nodejs.org](https://nodejs.org/) | `node --version` |
+| **npm** | Package manager (included with Node.js) | — | `npm --version` |
+| **PostgreSQL** | Database server | [postgresql.org/download](https://www.postgresql.org/download/) | `psql --version` |
+| **psql** | PostgreSQL client (run schema/seed scripts) | Included with PostgreSQL; ensure it’s on your PATH | `psql --version` |
+
+- **Node.js**: Use the LTS installer for your OS. On macOS you can also use [Homebrew](https://brew.sh/): `brew install node`.
+- **PostgreSQL**: Install the server and client tools. On macOS: `brew install postgresql@16` (or latest), then ensure `psql` is on your PATH (e.g. `export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"`).
+
+After installing, run the verify commands above to confirm each tool is available.
+
+---
+
+### Installation and Setup
+
+1. **Clone the repository** (if you haven’t already):
+   ```bash
+   git clone <your-repo-url>
+   cd house-quest-planner
+   ```
+
+2. **Create the PostgreSQL database** (PostgreSQL must be running):
+   ```bash
+   createdb homebuyersHandbook
+   ```
+   If `createdb` is not in your PATH, use the full path to the PostgreSQL bin directory or connect as a superuser and run `CREATE DATABASE homebuyersHandbook;` in `psql`.
+
+3. **Run the schema and seed scripts** (from the project root):
+   ```bash
+   psql -d homebuyersHandbook -f db/schema.sql
+   psql -d homebuyersHandbook -f db/seed.sql
+   ```
+   If you need to specify a user or host: `psql -U your_username -d homebuyersHandbook -f db/schema.sql` (and similarly for `seed.sql`).
+
+4. **Configure environment variables** for the backend:
+   - Copy the example env file: `cp backend/.env.example backend/.env`
+   - Edit `backend/.env` and set:
+     - `DATABASE_URL=postgresql://YOUR_USERNAME:YOUR_PASSWORD@localhost:5432/homebuyersHandbook` (use your PostgreSQL username and password)
+     - `PORT=3001` (or another port if you prefer)
+
+5. **Install dependencies** for backend and frontend:
+   ```bash
+   cd backend && npm install && cd ..
+   cd frontend && npm install && cd ..
+   ```
+
+---
+
+### Running the Application
+
+1. Start the backend (from the project root):
+   ```bash
+   cd backend
+   npm install
+   npm run dev
+   ```
+   Leave this terminal running.
+
+2. In a **second terminal**, start the frontend:
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+
+3. Open the app in your browser at **http://localhost:8080/**.
+
+---
+
+### Verifying the Vertical Slice
+
+We implemented several features that connect to the database. You can verify that data persists as follows.
+
+**Account creation and sign-in**
+
+- Click **Sign in** (top right) or the **Start your journey** button.
+- Click **Create account**.
+- Enter email, password, and zip, then click **Create account**.
+- Enter plan details: Amount Saved, Maximum home price, Down payment %, Monthly income/expenses, Credit score, Timeline, Preferred areas. Click **Create my plan**.
+- You should land on the dashboard with your data shown. **Refresh the page** — the data should still be there.
+
+**Savings contribution (button that updates the database)**
+
+- Enter a contribution amount and click **Add**.
+- Confirm the savings progress updates. **Refresh the page** — the new total should persist.
+
+**Profile updates**
+
+- Go to **Profile**, change any information, and click **Save changes**. Changes should persist after refresh.
+
+**Sign out and sign back in**
+
+- Click **Sign out**, then sign in again with the same credentials. All previously entered information should still be there.
 
 
 
