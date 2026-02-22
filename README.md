@@ -24,6 +24,8 @@ Database Layer
 PostgreSQL – Relational database storing user info, budgets, house listings, and preferences
 
 Architecture Diagram. Include a system architecture diagram showing the user, frontend, backend, database, and any external services, with labeled arrows indicating how the components communicate.
+<img width="741" height="431" alt="image" src="https://github.com/user-attachments/assets/7a9bb034-c288-4498-97a8-dd8827d670b5" />
+
 ---
 
 ### Prerequisites
