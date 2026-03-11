@@ -43,6 +43,7 @@ export default function OnboardingPage() {
   const [timeHorizon, setTimeHorizon] = useState("");
   const [zipCodes, setZipCodes] = useState("");
   const [amountAlreadySaved, setAmountAlreadySaved] = useState("");
+  const [monthlyContribution, setMonthlyContribution] = useState("");
 
   const { data: progress, isLoading } = useQuery({
     queryKey: ["progress", user?.UserID],
@@ -74,6 +75,9 @@ export default function OnboardingPage() {
     setTimeHorizon(progress.timeHorizon ?? "");
     setZipCodes(progress.desiredZipCodes ?? "");
     setAmountAlreadySaved(progress.amountSaved ? String(Math.round(progress.amountSaved)) : "");
+    setMonthlyContribution(
+      progress.contributionGoal != null ? String(progress.contributionGoal) : ""
+    );
   }, [user, progress, navigate]);
 
   const completeMutation = useMutation({
@@ -87,6 +91,7 @@ export default function OnboardingPage() {
         monthlyExpenses: monthlyExpenses ? parseInt(monthlyExpenses, 10) : null,
         timeHorizon: timeHorizon || null,
         desiredZipCodes: zipCodes.trim() || null,
+        contributionGoal: monthlyContribution ? parseFloat(monthlyContribution) : null,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["progress", user?.UserID] });
@@ -232,7 +237,7 @@ export default function OnboardingPage() {
             )}
           </motion.div>
 
-          {/* Monthly Income & Expenses */}
+          {/* Monthly Income, Expenses & Contribution */}
           <motion.div variants={fadeUp} custom={3} className="bg-card rounded-xl p-6 shadow-card space-y-4">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -240,10 +245,12 @@ export default function OnboardingPage() {
               </div>
               <div>
                 <h2 className="text-lg font-semibold">Monthly finances</h2>
-                <p className="text-sm text-muted-foreground">Helps us tailor recommendations.</p>
+                <p className="text-sm text-muted-foreground">
+                  Your income, expenses, and how much you&apos;ll put toward your down payment each month.
+                </p>
               </div>
             </div>
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="grid sm:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="monthly-income">Monthly income</Label>
                 <div className="relative">
@@ -258,6 +265,24 @@ export default function OnboardingPage() {
                     min="0"
                   />
                 </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="monthly-contribution">Monthly contribution toward down payment</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                  <Input
+                    id="monthly-contribution"
+                    type="number"
+                    value={monthlyContribution}
+                    onChange={(e) => setMonthlyContribution(e.target.value)}
+                    className="pl-7"
+                    placeholder={monthlySavings != null ? String(monthlySavings) : "500"}
+                    min="0"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  This drives the &quot;time until affordable&quot; estimates for your saved homes.
+                </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="monthly-expenses">Monthly expenses</Label>

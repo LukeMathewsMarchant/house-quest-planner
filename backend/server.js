@@ -133,7 +133,9 @@ app.get("/api/progress", getUserId, async (req, res) => {
   }
 });
 
-// Upsert progress (profile save). ContributionGoal = Budget * (DownPaymentPercentage/100)
+// Upsert progress (profile save).
+// In this schema, ContributionGoal represents the user's monthly contribution
+// toward their down payment (used for affordability timelines).
 app.put("/api/progress", getUserId, async (req, res) => {
   try {
     const {
@@ -145,11 +147,8 @@ app.put("/api/progress", getUserId, async (req, res) => {
       monthlyExpenses,
       timeHorizon,
       desiredZipCodes,
+      contributionGoal,
     } = req.body;
-    const contributionGoal =
-      budget != null && downPaymentPercentage != null
-        ? (Number(budget) * Number(downPaymentPercentage)) / 100
-        : null;
     await pool.query(
       `INSERT INTO "Progress" (
         "UserID", "Budget", "DownPaymentPercentage", "AmountSaved", "CreditScore",
@@ -160,10 +159,7 @@ app.put("/api/progress", getUserId, async (req, res) => {
         "DownPaymentPercentage" = COALESCE(EXCLUDED."DownPaymentPercentage", "Progress"."DownPaymentPercentage"),
         "AmountSaved" = COALESCE(EXCLUDED."AmountSaved", "Progress"."AmountSaved"),
         "CreditScore" = COALESCE(EXCLUDED."CreditScore", "Progress"."CreditScore"),
-        "ContributionGoal" = COALESCE($6, "Progress"."ContributionGoal",
-          CASE WHEN "Progress"."Budget" IS NOT NULL AND "Progress"."DownPaymentPercentage" IS NOT NULL
-            THEN "Progress"."Budget" * "Progress"."DownPaymentPercentage" / 100
-            ELSE NULL END),
+        "ContributionGoal" = COALESCE(EXCLUDED."ContributionGoal", "Progress"."ContributionGoal"),
         "MonthlyIncome" = COALESCE(EXCLUDED."MonthlyIncome", "Progress"."MonthlyIncome"),
         "MonthlyExpenses" = COALESCE(EXCLUDED."MonthlyExpenses", "Progress"."MonthlyExpenses"),
         "TimeHorizon" = COALESCE(EXCLUDED."TimeHorizon", "Progress"."TimeHorizon"),
@@ -231,6 +227,109 @@ app.post("/api/progress/contribution", getUserId, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to add contribution" });
+  }
+});
+
+// Create a home and link to user's wishlist
+app.post("/api/homes", getUserId, async (req, res) => {
+  try {
+    const {
+      zillowUrl,
+      streetAddress,
+      city,
+      state,
+      zip,
+      price,
+      bedrooms,
+      bathrooms,
+      squareFeet,
+    } = req.body;
+
+    const homeResult = await pool.query(
+      `INSERT INTO "Homes" (
+        "StreetAddress", "City", "State", "Zip",
+        "Price", "Bedrooms", "Bathrooms", "SquareFeet", "ZillowURL"
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      RETURNING "HomeID", "StreetAddress", "City", "State", "Zip",
+                "Price", "Bedrooms", "Bathrooms", "SquareFeet", "ZillowURL"`,
+      [
+        streetAddress,
+        city,
+        state,
+        zip ? Number(zip) : null,
+        price ? Number(price) : null,
+        bedrooms ? Number(bedrooms) : null,
+        bathrooms ? Number(bathrooms) : null,
+        squareFeet ? Number(squareFeet) : null,
+        zillowUrl || null,
+      ]
+    );
+
+    const home = homeResult.rows[0];
+
+    await pool.query(
+      `INSERT INTO "WishList" ("UserID", "HomeID")
+       VALUES ($1, $2)
+       ON CONFLICT ("UserID", "HomeID") DO NOTHING`,
+      [req.userId, home.HomeID]
+    );
+
+    res.status(201).json(home);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to save home" });
+  }
+});
+
+// Get all homes in the current user's wishlist
+app.get("/api/wishlist/:userId", getUserId, async (req, res) => {
+  try {
+    const routeUserId = Number(req.params.userId);
+    if (Number.isNaN(routeUserId) || routeUserId !== req.userId) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+
+    const { rows } = await pool.query(
+      `SELECT h."HomeID", h."StreetAddress", h."City", h."State", h."Zip",
+              h."Price", h."Bedrooms", h."Bathrooms", h."SquareFeet", h."ZillowURL"
+       FROM "WishList" w
+       JOIN "Homes" h ON h."HomeID" = w."HomeID"
+       WHERE w."UserID" = $1
+       ORDER BY h."Price" DESC NULLS LAST, h."HomeID" DESC`,
+      [req.userId]
+    );
+
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to load saved homes" });
+  }
+});
+
+// Get detailed home data by id
+app.get("/api/homes/:homeId", async (req, res) => {
+  try {
+    const homeId = Number(req.params.homeId);
+    if (Number.isNaN(homeId)) {
+      return res.status(400).json({ error: "Invalid home id" });
+    }
+
+    const { rows } = await pool.query(
+      `SELECT "HomeID", "StreetAddress", "City", "State", "Zip",
+              "Price", "Bedrooms", "Bathrooms", "SquareFeet", "ZillowURL"
+       FROM "Homes"
+       WHERE "HomeID" = $1`,
+      [homeId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Home not found" });
+    }
+
+    res.json(rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to load home" });
   }
 });
 

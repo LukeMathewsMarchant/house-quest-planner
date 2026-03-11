@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/components/ui/use-toast";
 import { getProgress, updateProgress } from "@/lib/api";
 
 const fadeUp = {
@@ -26,10 +27,12 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { toast } = useToast();
   const [budgetHomePrice, setBudgetHomePrice] = useState("");
   const [downPaymentPct, setDownPaymentPct] = useState("");
   const [monthlyIncome, setMonthlyIncome] = useState("");
   const [monthlyExpenses, setMonthlyExpenses] = useState("");
+  const [monthlyContribution, setMonthlyContribution] = useState("");
   const [creditScore, setCreditScore] = useState([720]);
   const [timeHorizon, setTimeHorizon] = useState("");
   const [zipCodes, setZipCodes] = useState("");
@@ -46,8 +49,17 @@ export default function ProfilePage() {
     setDownPaymentPct(
       progress.downPaymentPercentage != null ? String(progress.downPaymentPercentage) : ""
     );
-    setMonthlyIncome(progress.monthlyIncome != null ? String(progress.monthlyIncome) : "");
-    setMonthlyExpenses(progress.monthlyExpenses != null ? String(progress.monthlyExpenses) : "");
+    const income = progress.monthlyIncome;
+    const expenses = progress.monthlyExpenses;
+    setMonthlyIncome(income != null ? String(income) : "");
+    setMonthlyExpenses(expenses != null ? String(expenses) : "");
+    if (progress.contributionGoal != null) {
+      setMonthlyContribution(String(progress.contributionGoal));
+    } else if (income != null && expenses != null) {
+      setMonthlyContribution(String(income - expenses));
+    } else {
+      setMonthlyContribution("");
+    }
     setCreditScore([progress.creditScore ?? 720]);
     setTimeHorizon(progress.timeHorizon ?? "");
     setZipCodes(progress.desiredZipCodes ?? "");
@@ -64,10 +76,14 @@ export default function ProfilePage() {
         monthlyExpenses: monthlyExpenses ? parseInt(monthlyExpenses, 10) : null,
         timeHorizon: timeHorizon || null,
         desiredZipCodes: zipCodes.trim() || null,
+        contributionGoal: monthlyContribution ? parseFloat(monthlyContribution) : null,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["progress", user?.UserID] });
-      alert("Profile saved successfully!");
+      toast({
+        title: "Profile saved",
+        description: "We’ve updated your plan with your latest numbers.",
+      });
     },
   });
 
@@ -167,7 +183,7 @@ export default function ProfilePage() {
             )}
           </motion.div>
 
-          {/* Monthly Income & Expenses */}
+          {/* Monthly Income, Expenses & Contribution */}
           <motion.div variants={fadeUp} custom={2} className="bg-card rounded-xl p-6 shadow-card space-y-4">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -175,10 +191,12 @@ export default function ProfilePage() {
               </div>
               <div>
                 <h2 className="text-lg font-semibold">Monthly Finances</h2>
-                <p className="text-sm text-muted-foreground">Your income and expenses</p>
+                <p className="text-sm text-muted-foreground">
+                  Your income, expenses, and how much you&apos;ll set aside for your down payment each month.
+                </p>
               </div>
             </div>
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="grid sm:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="monthly-income">Monthly Income</Label>
                 <div className="relative">
@@ -208,6 +226,24 @@ export default function ProfilePage() {
                     min="0"
                   />
                 </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="monthly-contribution">Monthly contribution goal</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                  <Input
+                    id="monthly-contribution"
+                    type="number"
+                    value={monthlyContribution}
+                    onChange={(e) => setMonthlyContribution(e.target.value)}
+                    className="pl-7"
+                    placeholder={monthlySavings != null ? String(monthlySavings) : "500"}
+                    min="0"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Used to estimate how long it will take to reach your down payment goal.
+                </p>
               </div>
             </div>
             {monthlySavings != null && (
