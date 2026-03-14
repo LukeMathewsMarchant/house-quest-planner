@@ -41,7 +41,9 @@ CREATE TABLE "Homes" (
   "StreetAddress" VARCHAR(255),
   "City" VARCHAR(100),
   "State" VARCHAR(50),
-  "Zip" INTEGER
+  "Zip" INTEGER,
+  "SquareFeet" INTEGER,
+  "ZillowURL" TEXT
 );
 
 -- WishList junction table (many-to-many between Users and Homes)

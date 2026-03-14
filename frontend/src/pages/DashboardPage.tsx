@@ -58,13 +58,17 @@ export default function DashboardPage() {
   }
 
   const saved = progress?.amountSaved ?? 0;
-  const goal = progress?.contributionGoal ?? 0;
-  const progressPercent = goal > 0 ? Math.min(100, (saved / goal) * 100) : 0;
+  const budget = progress?.budget ?? null;
+  const downPct = progress?.downPaymentPercentage ?? null;
+  const downPaymentGoal =
+    budget != null && downPct != null ? (budget * downPct) / 100 : 0;
+  const progressPercent =
+    downPaymentGoal > 0 ? Math.min(100, (saved / downPaymentGoal) * 100) : 0;
   const monthlyIncome = progress?.monthlyIncome ?? null;
   const monthlyExpenses = progress?.monthlyExpenses ?? null;
   const monthlySavings =
     monthlyIncome != null && monthlyExpenses != null ? monthlyIncome - monthlyExpenses : null;
-  const budget = progress?.budget ?? null;
+  const monthlyContribution = progress?.contributionGoal ?? null;
 
   return (
     <div className="container py-10 max-w-3xl">
@@ -84,16 +88,17 @@ export default function DashboardPage() {
             <div className="text-center space-y-2">
               <h2 className="text-2xl font-bold">Your Savings Progress</h2>
               <p className="text-lg text-muted-foreground">
-                ${saved.toLocaleString()} of ${goal > 0 ? goal.toLocaleString() : "—"} saved
+                ${saved.toLocaleString()} of $
+                {downPaymentGoal > 0 ? Math.round(downPaymentGoal).toLocaleString() : "—"} saved
               </p>
               <p className="text-sm text-muted-foreground">
-                {goal > 0
+                {downPaymentGoal > 0
                   ? `${Math.round(progressPercent)}% toward your down payment goal`
                   : "Set your budget and down payment % in Profile to see your goal."}
               </p>
             </div>
 
-            {goal > 0 && (
+            {downPaymentGoal > 0 && (
               <div className="w-full max-w-md space-y-2">
                 <Progress value={progressPercent} className="h-2" />
               </div>
@@ -167,9 +172,9 @@ export default function DashboardPage() {
               <DollarSign className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground mb-1">Down payment goal</p>
+              <p className="text-xs text-muted-foreground mb-1">Monthly contribution</p>
               <p className="text-lg font-bold">
-                {goal > 0 ? `$${goal.toLocaleString()}` : "—"}
+                {monthlyContribution != null ? `$${Math.round(monthlyContribution).toLocaleString()}` : "—"}
               </p>
             </div>
           </div>

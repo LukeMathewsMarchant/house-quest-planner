@@ -1,102 +1,144 @@
-import { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Bed, Bath, Square, ArrowDown, ArrowUp } from "lucide-react";
-import home1 from "@/assets/home-1.jpg";
-import home2 from "@/assets/home-2.jpg";
-import home3 from "@/assets/home-3.jpg";
-import home4 from "@/assets/home-4.jpg";
-import home5 from "@/assets/home-5.jpg";
-import home6 from "@/assets/home-6.jpg";
+import { Home as HomeIcon, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-const homeImages = [home1, home2, home3, home4, home5, home6];
-
-const listingsData = [
-  { id: 1, address: "12345 W Teal St", city: "Eagle, ID", price: 450000, beds: 4, baths: 3, sqft: 2100 },
-  { id: 2, address: "8421 Maple Grove Ln", city: "Meridian, ID", price: 425000, beds: 3, baths: 2, sqft: 1850 },
-  { id: 3, address: "903 Birchwood Ave", city: "Boise, ID", price: 398000, beds: 3, baths: 2.5, sqft: 1720 },
-  { id: 4, address: "5510 Sunset Ridge Dr", city: "Nampa, ID", price: 375000, beds: 4, baths: 2, sqft: 1950 },
-  { id: 5, address: "2201 Cedar Park Way", city: "Star, ID", price: 489000, beds: 5, baths: 3.5, sqft: 2400 },
-  { id: 6, address: "7718 Elm Crossing Ct", city: "Kuna, ID", price: 340000, beds: 3, baths: 2, sqft: 1580 },
-];
+import { useAuth } from "@/contexts/AuthContext";
+import { getProgress, getWishlist, createHome, type Home } from "@/lib/api";
+import { calculateDownPayment, calculateRemainingSavings, calculateAffordabilityTimeline } from "@/lib/affordability";
+import { AddHouseModal } from "@/components/saved-homes/AddHouseModal";
+import { HomeCard } from "@/components/saved-homes/HomeCard";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
   visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.08, duration: 0.4 } }),
 };
 
-type PriceSort = "low-high" | "high-low";
-
 export default function ListingsPage() {
-  const [priceSort, setPriceSort] = useState<PriceSort | null>(null);
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const [addOpen, setAddOpen] = useState(false);
 
-  const listings = useMemo(() => {
-    if (!priceSort) return listingsData;
-    const sorted = [...listingsData].sort((a, b) =>
-      priceSort === "low-high" ? a.price - b.price : b.price - a.price
-    );
-    return sorted;
-  }, [priceSort]);
+  const { data: progress } = useQuery({
+    queryKey: ["progress", user?.UserID],
+    queryFn: () => getProgress(user!.UserID),
+    enabled: !!user?.UserID,
+  });
+
+  const {
+    data: homes,
+    isLoading: loadingHomes,
+  } = useQuery<Home[]>({
+    queryKey: ["wishlist", user?.UserID],
+    queryFn: () => getWishlist(user!.UserID),
+    enabled: !!user?.UserID,
+  });
+
+  const addHomeMutation = useMutation({
+    mutationFn: (values: {
+      zillowUrl: string;
+      streetAddress: string;
+      city: string;
+      state: string;
+      zip: string;
+      price: number;
+      bedrooms: number;
+      bathrooms: number;
+      squareFeet: number;
+    }) => createHome(user!.UserID, values),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["wishlist", user?.UserID] });
+      setAddOpen(false);
+    },
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : "Failed to save home";
+      // Simple user feedback for now
+      // eslint-disable-next-line no-alert
+      alert(message);
+    },
+  });
+
+  useEffect(() => {
+    if (!user) {
+      navigate("/login", { replace: true });
+    }
+  }, [user, navigate]);
+
+  if (!user) return null;
 
   return (
     <div className="container py-10 max-w-5xl">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Houses Within Your Budget</h1>
-        <p className="text-muted-foreground mb-4">Showing homes in the $340K – $500K range based on your profile.</p>
-        <div className="flex flex-wrap gap-2">
-          <span className="text-sm text-muted-foreground mr-1 self-center">Sort by price:</span>
-          <Button
-            variant={priceSort === "low-high" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setPriceSort(priceSort === "low-high" ? null : "low-high")}
-          >
-            <ArrowUp className="h-4 w-4 mr-1" />
-            Low to High
-          </Button>
-          <Button
-            variant={priceSort === "high-low" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setPriceSort(priceSort === "high-low" ? null : "high-low")}
-          >
-            <ArrowDown className="h-4 w-4 mr-1" />
-            High to Low
-          </Button>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+      >
+        <div>
+          <h1 className="text-3xl font-bold mb-1">Saved Homes</h1>
+          <p className="text-muted-foreground">
+            Track homes you&apos;re considering and see how they compare to your savings and budget.
+          </p>
         </div>
+        <Button onClick={() => setAddOpen(true)} className="w-full sm:w-auto">
+          <Plus className="h-4 w-4 mr-2" />
+          Add House
+        </Button>
       </motion.div>
 
-      <motion.div initial="hidden" animate="visible" className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {listings.map((home, i) => (
-          <Link key={home.id} to={`/listings/${home.id}`}>
-            <motion.div
-              variants={fadeUp}
-              custom={i}
-              className="group bg-card rounded-xl overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 cursor-pointer hover:-translate-y-1"
-            >
-              {/* House image */}
-              <div className="h-40 overflow-hidden bg-muted">
-                <img
-                  src={homeImages[home.id - 1]}
-                  alt={home.address}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <div className="p-5">
-                <p className="text-2xl font-bold text-primary mb-1">
-                  ${home.price.toLocaleString()}
-                </p>
-                <p className="font-semibold text-sm mb-0.5">{home.address}</p>
-                <p className="text-xs text-muted-foreground mb-3">{home.city}</p>
-                <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1"><Bed className="h-3.5 w-3.5" />{home.beds} bd</span>
-                  <span className="flex items-center gap-1"><Bath className="h-3.5 w-3.5" />{home.baths} ba</span>
-                  <span className="flex items-center gap-1"><Square className="h-3.5 w-3.5" />{home.sqft.toLocaleString()} sqft</span>
-                </div>
-              </div>
-            </motion.div>
-          </Link>
-        ))}
-      </motion.div>
+      {loadingHomes ? (
+        <p className="text-muted-foreground">Loading your saved homes…</p>
+      ) : !homes || homes.length === 0 ? (
+        <div className="bg-card rounded-xl p-8 shadow-card text-center border border-dashed border-border">
+          <div className="flex justify-center mb-3">
+            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <HomeIcon className="h-6 w-6 text-primary" />
+            </div>
+          </div>
+          <h2 className="text-xl font-semibold mb-1">No homes saved yet</h2>
+          <p className="text-muted-foreground mb-4 max-w-md mx-auto">
+            Add homes from Zillow and we&apos;ll show how each one fits your budget, savings, and timeline.
+          </p>
+          <Button onClick={() => setAddOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add your first house
+          </Button>
+        </div>
+      ) : (
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+        >
+          {homes.map((home, index) => {
+            const downPaymentNeeded = calculateDownPayment(home.Price ?? 0, progress?.downPaymentPercentage ?? null);
+            const remainingSavings = calculateRemainingSavings(downPaymentNeeded, progress?.amountSaved);
+            const monthlySavings = progress?.contributionGoal ?? null;
+            const timeline = calculateAffordabilityTimeline(remainingSavings, monthlySavings);
+
+            return (
+              <HomeCard
+                key={home.HomeID}
+                home={home}
+                index={index}
+                fadeUp={fadeUp}
+                progress={progress ?? null}
+                downPaymentNeeded={downPaymentNeeded}
+                remainingSavings={remainingSavings}
+                timelineLabel={timeline?.label ?? null}
+              />
+            );
+          })}
+        </motion.div>
+      )}
+
+      <AddHouseModal
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        onSubmit={(values) => addHomeMutation.mutate(values)}
+        submitting={addHomeMutation.isPending}
+      />
     </div>
   );
 }

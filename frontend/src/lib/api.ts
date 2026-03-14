@@ -50,6 +50,21 @@ function progressHeaders(userId: number) {
   };
 }
 
+export type Home = {
+  HomeID: number;
+  StreetAddress: string;
+  City: string;
+  State: string;
+  Zip: number | null;
+  Price: number | null;
+  Bedrooms: number | null;
+  Bathrooms: number | null;
+  SquareFeet: number | null;
+  ZillowURL: string | null;
+};
+
+export type WishlistItem = Home;
+
 export async function getProgress(userId: number): Promise<Progress> {
   const res = await fetch(`${API_BASE}/api/progress`, {
     headers: { "X-User-Id": String(userId) },
@@ -70,6 +85,7 @@ export async function updateProgress(
     monthlyExpenses: number | null;
     timeHorizon: string | null;
     desiredZipCodes: string | null;
+    contributionGoal: number | null;
   }>
 ): Promise<Progress> {
   const res = await fetch(`${API_BASE}/api/progress`, {
@@ -93,5 +109,45 @@ export async function addContribution(
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error ?? "Failed to add contribution");
+  return data;
+}
+
+export async function createHome(
+  userId: number,
+  body: {
+    zillowUrl: string;
+    streetAddress: string;
+    city: string;
+    state: string;
+    zip: string;
+    price: number;
+    bedrooms: number;
+    bathrooms: number;
+    squareFeet: number;
+  }
+): Promise<Home> {
+  const res = await fetch(`${API_BASE}/api/homes`, {
+    method: "POST",
+    headers: progressHeaders(userId),
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error ?? "Failed to save home");
+  return data;
+}
+
+export async function getWishlist(userId: number): Promise<WishlistItem[]> {
+  const res = await fetch(`${API_BASE}/api/wishlist/${userId}`, {
+    headers: { "X-User-Id": String(userId) },
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error ?? "Failed to load saved homes");
+  return data;
+}
+
+export async function getHome(homeId: number): Promise<Home> {
+  const res = await fetch(`${API_BASE}/api/homes/${homeId}`);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error ?? "Failed to load home");
   return data;
 }
