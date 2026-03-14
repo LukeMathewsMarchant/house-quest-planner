@@ -11,6 +11,7 @@ import {
   Percent,
   Sparkles,
   PiggyBank,
+  Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
 import { getProgress, updateProgress } from "@/lib/api";
 
@@ -205,7 +212,26 @@ export default function OnboardingPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="down-payment-pct">Down payment %</Label>
+                <div className="flex items-center gap-1.5">
+                  <Label htmlFor="down-payment-pct">Down payment %</Label>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-muted text-muted-foreground cursor-default">
+                          <Info className="h-3 w-3" />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="max-w-[260px] text-sm leading-relaxed p-3">
+                        A 20% down payment is the traditional goal — it avoids PMI
+                        (Private Mortgage Insurance) and lowers your monthly payment.
+                        However, many first-time buyers put down 3–10% using FHA or
+                        conventional loans. Consider how much cash you'll have left
+                        after the down payment, your monthly budget, and how long you
+                        plan to stay in the home.
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <div className="relative">
                   <Percent className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
