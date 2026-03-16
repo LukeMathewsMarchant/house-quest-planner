@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Home as HomeIcon, Bed, Bath, Square } from "lucide-react";
+import { Home as HomeIcon, Bed, Bath, Square, Pencil, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 import type { Home, Progress as UserProgress } from "@/lib/api";
 
 type Props = {
@@ -14,6 +15,8 @@ type Props = {
   downPaymentNeeded: number;
   remainingSavings: number;
   timelineLabel: string | null;
+  onEdit?: (home: Home) => void;
+  onDelete?: (home: Home) => void;
 };
 
 export function HomeCard({
@@ -24,6 +27,8 @@ export function HomeCard({
   downPaymentNeeded,
   remainingSavings,
   timelineLabel,
+  onEdit,
+  onDelete,
 }: Props) {
   const saved = progress?.amountSaved ?? 0;
   const target = downPaymentNeeded;
@@ -127,6 +132,26 @@ export function HomeCard({
                   Open Zillow
                 </a>
               )}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1"
+                onClick={() => onEdit?.(home)}
+              >
+                <Pencil className="h-4 w-4 mr-2" />
+                Edit
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                className="flex-1"
+                onClick={() => onDelete?.(home)}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete
+              </Button>
             </div>
             <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
               <Bed className="h-3 w-3" />

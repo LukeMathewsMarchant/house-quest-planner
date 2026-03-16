@@ -281,6 +281,108 @@ app.post("/api/homes", getUserId, async (req, res) => {
   }
 });
 
+// Update a saved home (only if it belongs to current user's wishlist)
+app.put("/api/homes/:homeId", getUserId, async (req, res) => {
+  try {
+    const homeId = Number(req.params.homeId);
+    if (Number.isNaN(homeId)) {
+      return res.status(400).json({ error: "Invalid home id" });
+    }
+
+    const {
+      zillowUrl,
+      streetAddress,
+      city,
+      state,
+      zip,
+      price,
+      bedrooms,
+      bathrooms,
+      squareFeet,
+    } = req.body ?? {};
+
+    const ownership = await pool.query(
+      `SELECT 1 FROM "WishList" WHERE "UserID" = $1 AND "HomeID" = $2`,
+      [req.userId, homeId]
+    );
+    if (ownership.rows.length === 0) {
+      return res.status(404).json({ error: "Home not found" });
+    }
+
+    const { rows } = await pool.query(
+      `UPDATE "Homes" SET
+        "StreetAddress" = $1,
+        "City" = $2,
+        "State" = $3,
+        "Zip" = $4,
+        "Price" = $5,
+        "Bedrooms" = $6,
+        "Bathrooms" = $7,
+        "SquareFeet" = $8,
+        "ZillowURL" = $9
+      WHERE "HomeID" = $10
+      RETURNING "HomeID", "StreetAddress", "City", "State", "Zip",
+                "Price", "Bedrooms", "Bathrooms", "SquareFeet", "ZillowURL"`,
+      [
+        streetAddress ?? null,
+        city ?? null,
+        state ?? null,
+        zip ? Number(zip) : null,
+        price != null && price !== "" ? Number(price) : null,
+        bedrooms != null && bedrooms !== "" ? Number(bedrooms) : null,
+        bathrooms != null && bathrooms !== "" ? Number(bathrooms) : null,
+        squareFeet != null && squareFeet !== "" ? Number(squareFeet) : null,
+        zillowUrl || null,
+        homeId,
+      ]
+    );
+
+    res.json(rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to update home" });
+  }
+});
+
+// Delete a saved home for the current user.
+// Removes the wishlist link; also deletes the home row if no other wishlist rows reference it.
+app.delete("/api/homes/:homeId", getUserId, async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const homeId = Number(req.params.homeId);
+    if (Number.isNaN(homeId)) {
+      return res.status(400).json({ error: "Invalid home id" });
+    }
+
+    await client.query("BEGIN");
+    const delLink = await client.query(
+      `DELETE FROM "WishList" WHERE "UserID" = $1 AND "HomeID" = $2`,
+      [req.userId, homeId]
+    );
+    if (delLink.rowCount === 0) {
+      await client.query("ROLLBACK");
+      return res.status(404).json({ error: "Home not found" });
+    }
+
+    const remaining = await client.query(
+      `SELECT 1 FROM "WishList" WHERE "HomeID" = $1 LIMIT 1`,
+      [homeId]
+    );
+    if (remaining.rows.length === 0) {
+      await client.query(`DELETE FROM "Homes" WHERE "HomeID" = $1`, [homeId]);
+    }
+
+    await client.query("COMMIT");
+    res.status(204).end();
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error(err);
+    res.status(500).json({ error: "Failed to delete home" });
+  } finally {
+    client.release();
+  }
+});
+
 // Get all homes in the current user's wishlist
 app.get("/api/wishlist/:userId", getUserId, async (req, res) => {
   try {

@@ -136,6 +136,41 @@ export async function createHome(
   return data;
 }
 
+export async function updateHome(
+  userId: number,
+  homeId: number,
+  body: {
+    zillowUrl: string;
+    streetAddress: string;
+    city: string;
+    state: string;
+    zip: string;
+    price: number;
+    bedrooms: number;
+    bathrooms: number;
+    squareFeet: number;
+  }
+): Promise<Home> {
+  const res = await fetch(`${API_BASE}/api/homes/${homeId}`, {
+    method: "PUT",
+    headers: progressHeaders(userId),
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error ?? "Failed to update home");
+  return data;
+}
+
+export async function deleteHome(userId: number, homeId: number): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/homes/${homeId}`, {
+    method: "DELETE",
+    headers: progressHeaders(userId),
+  });
+  if (res.status === 204) return;
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error((data as { error?: string }).error ?? "Failed to delete home");
+}
+
 export async function getWishlist(userId: number): Promise<WishlistItem[]> {
   const res = await fetch(`${API_BASE}/api/wishlist/${userId}`, {
     headers: { "X-User-Id": String(userId) },

@@ -5,10 +5,20 @@ import { motion } from "framer-motion";
 import { Home as HomeIcon, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { getProgress, getWishlist, createHome, type Home } from "@/lib/api";
+import { getProgress, getWishlist, createHome, updateHome, deleteHome, type Home } from "@/lib/api";
 import { calculateDownPayment, calculateRemainingSavings, calculateAffordabilityTimeline } from "@/lib/affordability";
-import { AddHouseModal } from "@/components/saved-homes/AddHouseModal";
+import { AddHouseModal, type HouseFormValues } from "@/components/saved-homes/AddHouseModal";
 import { HomeCard } from "@/components/saved-homes/HomeCard";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -20,6 +30,8 @@ export default function ListingsPage() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const [addOpen, setAddOpen] = useState(false);
+  const [editHome, setEditHome] = useState<Home | null>(null);
+  const [deleteHomeTarget, setDeleteHomeTarget] = useState<Home | null>(null);
 
   const { data: progress } = useQuery({
     queryKey: ["progress", user?.UserID],
@@ -55,6 +67,32 @@ export default function ListingsPage() {
     onError: (err: unknown) => {
       const message = err instanceof Error ? err.message : "Failed to save home";
       // Simple user feedback for now
+      // eslint-disable-next-line no-alert
+      alert(message);
+    },
+  });
+
+  const editHomeMutation = useMutation({
+    mutationFn: (values: HouseFormValues) => updateHome(user!.UserID, editHome!.HomeID, values),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["wishlist", user?.UserID] });
+      setEditHome(null);
+    },
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : "Failed to update home";
+      // eslint-disable-next-line no-alert
+      alert(message);
+    },
+  });
+
+  const deleteHomeMutation = useMutation({
+    mutationFn: (homeId: number) => deleteHome(user!.UserID, homeId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["wishlist", user?.UserID] });
+      setDeleteHomeTarget(null);
+    },
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : "Failed to delete home";
       // eslint-disable-next-line no-alert
       alert(message);
     },
@@ -127,6 +165,8 @@ export default function ListingsPage() {
                 downPaymentNeeded={downPaymentNeeded}
                 remainingSavings={remainingSavings}
                 timelineLabel={timeline?.label ?? null}
+                onEdit={(h) => setEditHome(h)}
+                onDelete={(h) => setDeleteHomeTarget(h)}
               />
             );
           })}
@@ -139,6 +179,56 @@ export default function ListingsPage() {
         onSubmit={(values) => addHomeMutation.mutate(values)}
         submitting={addHomeMutation.isPending}
       />
+
+      <AddHouseModal
+        open={editHome != null}
+        onOpenChange={(open) => {
+          if (!open) setEditHome(null);
+        }}
+        title="Edit house"
+        description="Update the details for this saved home. Zillow link is optional."
+        submitLabel="Save changes"
+        initialValues={
+          editHome
+            ? {
+                zillowUrl: editHome.ZillowURL ?? "",
+                streetAddress: editHome.StreetAddress ?? "",
+                city: editHome.City ?? "",
+                state: editHome.State ?? "",
+                zip: editHome.Zip != null ? String(editHome.Zip) : "",
+                price: editHome.Price ?? 0,
+                bedrooms: editHome.Bedrooms ?? 0,
+                bathrooms: editHome.Bathrooms ?? 0,
+                squareFeet: editHome.SquareFeet ?? 0,
+              }
+            : null
+        }
+        onSubmit={(values) => editHomeMutation.mutate(values)}
+        submitting={editHomeMutation.isPending}
+      />
+
+      <AlertDialog open={deleteHomeTarget != null} onOpenChange={(open) => !open && setDeleteHomeTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this saved home?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This removes the home from your saved list. You can always add it again later.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteHomeMutation.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (!deleteHomeTarget) return;
+                deleteHomeMutation.mutate(deleteHomeTarget.HomeID);
+              }}
+              disabled={deleteHomeMutation.isPending}
+            >
+              {deleteHomeMutation.isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

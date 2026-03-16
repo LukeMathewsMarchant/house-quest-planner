@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-type AddHouseValues = {
+export type HouseFormValues = {
   zillowUrl: string;
   streetAddress: string;
   city: string;
@@ -19,11 +19,24 @@ type AddHouseValues = {
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (values: AddHouseValues) => void;
+  onSubmit: (values: HouseFormValues) => void;
   submitting: boolean;
+  title?: string;
+  description?: string;
+  submitLabel?: string;
+  initialValues?: Partial<HouseFormValues> | null;
 };
 
-export function AddHouseModal({ open, onOpenChange, onSubmit, submitting }: Props) {
+export function AddHouseModal({
+  open,
+  onOpenChange,
+  onSubmit,
+  submitting,
+  title = "Add a house",
+  description = "Paste a Zillow link and basic details. We&apos;ll use this to compare the home against your savings and budget.",
+  submitLabel = "Save house",
+  initialValues = null,
+}: Props) {
   const [zillowUrl, setZillowUrl] = useState("");
   const [streetAddress, setStreetAddress] = useState("");
   const [city, setCity] = useState("");
@@ -45,6 +58,20 @@ export function AddHouseModal({ open, onOpenChange, onSubmit, submitting }: Prop
     setBathrooms("");
     setSquareFeet("");
   };
+
+  useEffect(() => {
+    if (!open) return;
+    if (!initialValues) return;
+    setZillowUrl(initialValues.zillowUrl ?? "");
+    setStreetAddress(initialValues.streetAddress ?? "");
+    setCity(initialValues.city ?? "");
+    setState(initialValues.state ?? "");
+    setZip(initialValues.zip ?? "");
+    setPrice(initialValues.price != null ? String(initialValues.price) : "");
+    setBedrooms(initialValues.bedrooms != null ? String(initialValues.bedrooms) : "");
+    setBathrooms(initialValues.bathrooms != null ? String(initialValues.bathrooms) : "");
+    setSquareFeet(initialValues.squareFeet != null ? String(initialValues.squareFeet) : "");
+  }, [open, initialValues]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,11 +99,8 @@ export function AddHouseModal({ open, onOpenChange, onSubmit, submitting }: Prop
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add a house</DialogTitle>
-          <DialogDescription>
-            Paste a Zillow link and basic details. We&apos;ll use this to compare the home against your savings and
-            budget.
-          </DialogDescription>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -213,7 +237,7 @@ export function AddHouseModal({ open, onOpenChange, onSubmit, submitting }: Prop
               Cancel
             </Button>
             <Button type="submit" disabled={submitting}>
-              {submitting ? "Saving..." : "Save house"}
+              {submitting ? "Saving..." : submitLabel}
             </Button>
           </div>
         </form>
