@@ -4,6 +4,100 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+const SUFFIXES = new Set(["rd","st","ave","blvd","dr","ln","ct","way","pl","cir","ter","pkwy","hwy","trail","loop","pass","run","row","sq"]);
+
+// Parse a hyphen-delimited address slug: {street}-{city}-{STATE}-{zip}
+// Used by: Zillow, Homes.com, Apartments.com, HotPads, Roofstock, Zumper
+function parseHyphenSlug(slug: string): Partial<HouseFormValues> {
+  const tokens = slug.split("-");
+  let zipIdx = -1;
+  for (let i = tokens.length - 1; i >= 0; i--) {
+    if (/^\d{5}$/.test(tokens[i])) { zipIdx = i; break; }
+  }
+  if (zipIdx < 1) return {};
+  const stateIdx = zipIdx - 1;
+  if (!/^[A-Za-z]{2}$/.test(tokens[stateIdx])) return {};
+
+  let suffixIdx = -1;
+  for (let i = stateIdx - 1; i >= 0; i--) {
+    if (SUFFIXES.has(tokens[i].toLowerCase())) { suffixIdx = i; break; }
+  }
+
+  if (suffixIdx >= 0) {
+    return {
+      streetAddress: tokens.slice(0, suffixIdx + 1).map(cap).join(" "),
+      city: tokens.slice(suffixIdx + 1, stateIdx).map(cap).join(" "),
+      state: tokens[stateIdx].toUpperCase(),
+      zip: tokens[zipIdx],
+    };
+  }
+  return { state: tokens[stateIdx].toUpperCase(), zip: tokens[zipIdx] };
+}
+
+function parseListingUrl(url: string): Partial<HouseFormValues> {
+  try {
+    const { hostname, pathname } = new URL(url);
+    const host = hostname.replace(/^www\./, "");
+
+    // Realtor.com: /realestateandhomes-detail/{street}_{city}_{state}_{zip}_M{id}
+    if (host === "realtor.com") {
+      const m = pathname.match(/\/realestateandhomes-detail\/([^/?]+)/);
+      if (m) {
+        const parts = m[1].split("_");
+        if (parts.length >= 4) {
+          return {
+            streetAddress: parts[0].split("-").map(cap).join(" "),
+            city: parts[1].split("-").map(cap).join(" "),
+            state: parts[2].toUpperCase(),
+            zip: parts[3].replace(/\D/g, "").slice(0, 5),
+          };
+        }
+      }
+    }
+
+    // Redfin: /{STATE}/{City}/{street-zip}/home/{id}
+    if (host === "redfin.com") {
+      const segs = pathname.split("/").filter(Boolean);
+      if (segs.length >= 4 && segs[3] === "home") {
+        const tokens = segs[2].split("-");
+        let zipIdx = -1;
+        for (let i = tokens.length - 1; i >= 0; i--) {
+          if (/^\d{5}$/.test(tokens[i])) { zipIdx = i; break; }
+        }
+        return {
+          streetAddress: zipIdx > 0 ? tokens.slice(0, zipIdx).map(cap).join(" ") : undefined,
+          city: segs[1].split("-").map(cap).join(" "),
+          state: segs[0].toUpperCase(),
+          zip: zipIdx >= 0 ? tokens[zipIdx] : undefined,
+        };
+      }
+    }
+
+    // Trulia: /p/{state}/{city}/{full-address-slug}--{id}
+    if (host === "trulia.com") {
+      const m = pathname.match(/\/p\/([a-z]{2})\/([^/]+)\/([^/?]+)/);
+      if (m) {
+        const state = m[1].toUpperCase();
+        const city = m[2].split("-").map(cap).join(" ");
+        const slug = m[3].replace(/--\d+$/, "");
+        const parsed = parseHyphenSlug(slug);
+        return { ...parsed, state, city: parsed.city || city };
+      }
+    }
+
+    // Generic hyphen slug fallback: Zillow, Homes.com, Apartments.com, HotPads, Roofstock, Zumper
+    for (const seg of pathname.split("/").filter(Boolean)) {
+      const result = parseHyphenSlug(seg);
+      if (result.state && result.zip) return result;
+    }
+
+    return {};
+  } catch {
+    return {};
+  }
+}
+
 export type HouseFormValues = {
   zillowUrl: string;
   streetAddress: string;
@@ -33,7 +127,7 @@ export function AddHouseModal({
   onSubmit,
   submitting,
   title = "Add a house",
-  description = "Paste a Zillow link and basic details. We&apos;ll use this to compare the home against your savings and budget.",
+  description = "Paste a Zillow/Web listing link below and basic details. We'll use this to compare the home against your savings and budget.",
   submitLabel = "Save house",
   initialValues = null,
 }: Props) {
@@ -104,13 +198,21 @@ export function AddHouseModal({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="zillow-url">Zillow link</Label>
+            <Label htmlFor="zillow-url">Zillow/Web listing link</Label>
             <Input
               id="zillow-url"
               type="url"
               placeholder="https://www.zillow.com/..."
               value={zillowUrl}
-              onChange={(e) => setZillowUrl(e.target.value)}
+              onChange={(e) => {
+                const url = e.target.value;
+                setZillowUrl(url);
+                const parsed = parseListingUrl(url);
+                if (parsed.streetAddress) setStreetAddress(parsed.streetAddress);
+                if (parsed.city) setCity(parsed.city);
+                if (parsed.state) setState(parsed.state);
+                if (parsed.zip) setZip(parsed.zip);
+              }}
             />
           </div>
           <div className="space-y-2">

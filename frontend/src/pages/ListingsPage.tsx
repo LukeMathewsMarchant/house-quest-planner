@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Home as HomeIcon, Plus } from "lucide-react";
+import heroHome from "@/assets/hero-home.jpg";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { getProgress, getWishlist, createHome, updateHome, deleteHome, type Home } from "@/lib/api";
@@ -107,23 +108,32 @@ export default function ListingsPage() {
   if (!user) return null;
 
   return (
-    <div className="container py-10 max-w-5xl">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
-      >
-        <div>
-          <h1 className="text-3xl font-bold mb-1">Saved Homes</h1>
-          <p className="text-muted-foreground">
-            Track homes you&apos;re considering and see how they compare to your savings and budget.
-          </p>
+    <div>
+      {/* Hero banner */}
+      <div className="relative h-48 sm:h-56 w-full overflow-hidden mb-8">
+        <img src={heroHome} alt="" className="w-full h-full object-cover object-center" />
+        <div className="absolute inset-0 bg-black/50" />
+        <div className="absolute inset-0 flex items-center justify-between px-6 sm:px-12 max-w-5xl mx-auto w-full">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-1">Saved Homes</h1>
+            <p className="text-white/80 text-sm max-w-md">
+              Track homes you&apos;re considering and see how they compare to your savings and budget.
+            </p>
+          </div>
+          <Button onClick={() => setAddOpen(true)} className="shrink-0 hidden sm:flex">
+            <Plus className="h-4 w-4 mr-2" />
+            Add House
+          </Button>
         </div>
-        <Button onClick={() => setAddOpen(true)} className="w-full sm:w-auto">
-          <Plus className="h-4 w-4 mr-2" />
-          Add House
-        </Button>
-      </motion.div>
+      </div>
+
+      <div className="container max-w-5xl pb-10">
+        <div className="flex justify-end mb-6 sm:hidden">
+          <Button onClick={() => setAddOpen(true)} className="w-full">
+            <Plus className="h-4 w-4 mr-2" />
+            Add House
+          </Button>
+        </div>
 
       {loadingHomes ? (
         <p className="text-muted-foreground">Loading your saved homes…</p>
@@ -229,6 +239,7 @@ export default function ListingsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      </div>
     </div>
   );
 }
