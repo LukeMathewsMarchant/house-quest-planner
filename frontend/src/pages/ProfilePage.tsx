@@ -78,8 +78,8 @@ export default function ProfilePage() {
         desiredZipCodes: zipCodes.trim() || null,
         contributionGoal: monthlyContribution ? parseFloat(monthlyContribution) : null,
       }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["progress", user?.UserID] });
+    onSuccess: (updatedProgress) => {
+      queryClient.setQueryData(["progress", user?.UserID], updatedProgress);
       toast({
         title: "Profile saved",
         description: "We’ve updated your plan with your latest numbers.",
