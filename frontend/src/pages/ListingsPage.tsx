@@ -35,6 +35,14 @@ export default function ListingsPage() {
   const [editHome, setEditHome] = useState<Home | null>(null);
   const [deleteHomeTarget, setDeleteHomeTarget] = useState<Home | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [minBeds, setMinBeds] = useState("");
+  const [minBaths, setMinBaths] = useState("");
+  const [minSqft, setMinSqft] = useState("");
+  const [city, setCity] = useState("");
+  const [stateFilter, setStateFilter] = useState("");
+  const [zip, setZip] = useState("");
 
   const { data: progress } = useQuery({
     queryKey: ["progress", user?.UserID],
@@ -110,9 +118,39 @@ export default function ListingsPage() {
   if (!user) return null;
 
   const filteredHomes = (homes ?? []).filter((home) => {
-    if (!searchTerm.trim()) return true;
-    const query = searchTerm.toLowerCase();
+    const price = home.Price ?? 0;
+    const bedrooms = home.Bedrooms ?? 0;
+    const bathrooms = home.Bathrooms ?? 0;
+    const squareFeet = home.SquareFeet ?? 0;
+    const homeCity = (home.City ?? "").toLowerCase();
+    const homeState = (home.State ?? "").toLowerCase();
+    const homeZip = home.Zip != null ? String(home.Zip) : "";
 
+    const minPriceNum = minPrice ? Number(minPrice) : null;
+    const maxPriceNum = maxPrice ? Number(maxPrice) : null;
+    const minBedsNum = minBeds ? Number(minBeds) : null;
+    const minBathsNum = minBaths ? Number(minBaths) : null;
+    const minSqftNum = minSqft ? Number(minSqft) : null;
+    const zipFilter = zip.trim();
+    const query = searchTerm.trim().toLowerCase();
+
+    if (Number.isNaN(minPriceNum ?? undefined)) return false;
+    if (Number.isNaN(maxPriceNum ?? undefined)) return false;
+    if (Number.isNaN(minBedsNum ?? undefined)) return false;
+    if (Number.isNaN(minBathsNum ?? undefined)) return false;
+    if (Number.isNaN(minSqftNum ?? undefined)) return false;
+
+    if (minPriceNum !== null && price < minPriceNum) return false;
+    if (maxPriceNum !== null && price > maxPriceNum) return false;
+    if (minBedsNum !== null && bedrooms < minBedsNum) return false;
+    if (minBathsNum !== null && bathrooms < minBathsNum) return false;
+    if (minSqftNum !== null && squareFeet < minSqftNum) return false;
+
+    if (city.trim() && !homeCity.includes(city.trim().toLowerCase())) return false;
+    if (stateFilter.trim() && !homeState.includes(stateFilter.trim().toLowerCase())) return false;
+    if (zipFilter && homeZip !== zipFilter) return false;
+
+    if (!query) return true;
     const fields: Array<string | number | null | undefined> = [
       home.StreetAddress,
       home.City,
@@ -174,6 +212,132 @@ export default function ListingsPage() {
             <Plus className="h-4 w-4 mr-2" />
             Add House
           </Button>
+        </div>
+
+        <div className="mb-6 rounded-xl border bg-card p-4 shadow-sm">
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <h2 className="text-sm font-medium text-muted-foreground">Filter saved homes</h2>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setMinPrice("");
+                setMaxPrice("");
+                setMinBeds("");
+                setMinBaths("");
+                setMinSqft("");
+                setCity("");
+                setStateFilter("");
+                setZip("");
+              }}
+            >
+              Clear filters
+            </Button>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground" htmlFor="minPrice">
+                Min price
+              </label>
+              <input
+                id="minPrice"
+                type="number"
+                inputMode="numeric"
+                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                value={minPrice}
+                onChange={(e) => setMinPrice(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground" htmlFor="maxPrice">
+                Max price
+              </label>
+              <input
+                id="maxPrice"
+                type="number"
+                inputMode="numeric"
+                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                value={maxPrice}
+                onChange={(e) => setMaxPrice(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground" htmlFor="minBeds">
+                Min beds
+              </label>
+              <input
+                id="minBeds"
+                type="number"
+                inputMode="numeric"
+                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                value={minBeds}
+                onChange={(e) => setMinBeds(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground" htmlFor="minBaths">
+                Min baths
+              </label>
+              <input
+                id="minBaths"
+                type="number"
+                inputMode="numeric"
+                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                value={minBaths}
+                onChange={(e) => setMinBaths(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground" htmlFor="minSqft">
+                Min square feet
+              </label>
+              <input
+                id="minSqft"
+                type="number"
+                inputMode="numeric"
+                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                value={minSqft}
+                onChange={(e) => setMinSqft(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground" htmlFor="city">
+                City
+              </label>
+              <input
+                id="city"
+                type="text"
+                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground" htmlFor="state">
+                State
+              </label>
+              <input
+                id="state"
+                type="text"
+                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                value={stateFilter}
+                onChange={(e) => setStateFilter(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground" htmlFor="zip">
+                Zip
+              </label>
+              <input
+                id="zip"
+                type="text"
+                inputMode="numeric"
+                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                value={zip}
+                onChange={(e) => setZip(e.target.value)}
+              />
+            </div>
+          </div>
         </div>
 
       {loadingHomes ? (
