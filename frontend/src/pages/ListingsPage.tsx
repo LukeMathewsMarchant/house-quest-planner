@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Home as HomeIcon, Plus } from "lucide-react";
 import heroHome from "@/assets/hero-home.jpg";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { getProgress, getWishlist, createHome, updateHome, deleteHome, type Home } from "@/lib/api";
 import { calculateDownPayment, calculateRemainingSavings, calculateAffordabilityTimeline } from "@/lib/affordability";
@@ -33,6 +34,7 @@ export default function ListingsPage() {
   const [addOpen, setAddOpen] = useState(false);
   const [editHome, setEditHome] = useState<Home | null>(null);
   const [deleteHomeTarget, setDeleteHomeTarget] = useState<Home | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const { data: progress } = useQuery({
     queryKey: ["progress", user?.UserID],
@@ -107,6 +109,28 @@ export default function ListingsPage() {
 
   if (!user) return null;
 
+  const filteredHomes = (homes ?? []).filter((home) => {
+    if (!searchTerm.trim()) return true;
+    const query = searchTerm.toLowerCase();
+
+    const fields: Array<string | number | null | undefined> = [
+      home.StreetAddress,
+      home.City,
+      home.State,
+      home.Zip,
+      home.ZillowURL,
+      home.Bedrooms,
+      home.Bathrooms,
+      home.SquareFeet,
+      home.Price,
+    ];
+
+    return fields.some((value) => {
+      if (value == null) return false;
+      return String(value).toLowerCase().includes(query);
+    });
+  });
+
   return (
     <div>
       {/* Hero banner */}
@@ -128,6 +152,23 @@ export default function ListingsPage() {
       </div>
 
       <div className="container max-w-5xl pb-10">
+        <div className="flex justify-between items-center gap-4 mb-6">
+          <div className="flex-1 max-w-md">
+            <Input
+              placeholder="Search saved homes by address, city, price, etc."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="bg-background"
+            />
+          </div>
+          <div className="hidden sm:flex">
+            <Button onClick={() => setAddOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add House
+            </Button>
+          </div>
+        </div>
+
         <div className="flex justify-end mb-6 sm:hidden">
           <Button onClick={() => setAddOpen(true)} className="w-full">
             <Plus className="h-4 w-4 mr-2" />
@@ -137,7 +178,7 @@ export default function ListingsPage() {
 
       {loadingHomes ? (
         <p className="text-muted-foreground">Loading your saved homes…</p>
-      ) : !homes || homes.length === 0 ? (
+      ) : !filteredHomes || filteredHomes.length === 0 ? (
         <div className="bg-card rounded-xl p-8 shadow-card text-center border border-dashed border-border">
           <div className="flex justify-center mb-3">
             <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
@@ -146,12 +187,16 @@ export default function ListingsPage() {
           </div>
           <h2 className="text-xl font-semibold mb-1">No homes saved yet</h2>
           <p className="text-muted-foreground mb-4 max-w-md mx-auto">
-            Add homes from Zillow and we&apos;ll show how each one fits your budget, savings, and timeline.
+            {searchTerm.trim()
+              ? "No homes match your search. Try a different address, city, or price."
+              : "Add homes from Zillow and we&apos;ll show how each one fits your budget, savings, and timeline."}
           </p>
-          <Button onClick={() => setAddOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add your first house
-          </Button>
+          {!searchTerm.trim() && (
+            <Button onClick={() => setAddOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add your first house
+            </Button>
+          )}
         </div>
       ) : (
         <motion.div
@@ -159,7 +204,7 @@ export default function ListingsPage() {
           animate="visible"
           className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
         >
-          {homes.map((home, index) => {
+          {filteredHomes.map((home, index) => {
             const downPaymentNeeded = calculateDownPayment(home.Price ?? 0, progress?.downPaymentPercentage ?? null);
             const remainingSavings = calculateRemainingSavings(downPaymentNeeded, progress?.amountSaved);
             const monthlySavings = progress?.contributionGoal ?? null;
