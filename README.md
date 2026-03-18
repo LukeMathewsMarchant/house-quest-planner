@@ -296,8 +296,12 @@ When available, the timeline includes:
 * Update your account
 * Search bar for homes
 * Add house
+* fliter listings
 * Edit house listing
 * It opens in zillow
+
+### NOT COMPLETE
+* Add a info card on the profile page when a user sets their down payment.
 
 
 
