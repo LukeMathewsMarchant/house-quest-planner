@@ -301,7 +301,7 @@ When available, the timeline includes:
 * It opens in zillow
 
 ### NOT COMPLETE
-* Add a info card on the profile page when a user sets their down payment.
+* Add a info card on the profile page when a user sets their down payment..
 
 
 
