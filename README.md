@@ -290,6 +290,14 @@ When available, the timeline includes:
 *   `remainingMonths` — leftover months after full years
 *   `label` — formatted string for display in the UI
 
+### COMPLETE 
+* Saving Homes
+* Putting in your budget
+* Update your account
+* Search bar for homes
+* Add house
+* Edit house listing
+* It opens in zillow
 
 
 
