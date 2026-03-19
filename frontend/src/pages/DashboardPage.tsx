@@ -2,14 +2,16 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { DollarSign, Home, TrendingUp, Building2, GraduationCap, Plus } from "lucide-react";
+import { DollarSign, Home, TrendingUp, Building2, GraduationCap, Plus, Info, Percent } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { CircularProgress } from "@/components/ui/circular-progress";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
-import { getProgress, addContribution } from "@/lib/api";
+import { getProgress, addContribution, getMortgageRates } from "@/lib/api";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -21,6 +23,7 @@ export default function DashboardPage() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const [contributionAmount, setContributionAmount] = useState("");
+  const [showRateSuggestions, setShowRateSuggestions] = useState(false);
 
   const { data: progress, isLoading } = useQuery({
     queryKey: ["progress", user?.UserID],
@@ -34,6 +37,14 @@ export default function DashboardPage() {
       queryClient.invalidateQueries({ queryKey: ["progress", user?.UserID] });
       setContributionAmount("");
     },
+  });
+
+  const { data: mortgageRates, error: mortgageRatesError } = useQuery({
+    queryKey: ["mortgageRates", user?.UserID, progress?.homeState, progress?.creditScore, progress?.downPaymentPercentage],
+    queryFn: () => getMortgageRates(user!.UserID),
+    enabled: !!user?.UserID && !!progress?.homeState,
+    staleTime: 10 * 60 * 1000,
+    retry: 1,
   });
 
   const handleAddContribution = (e: React.FormEvent) => {
@@ -180,8 +191,59 @@ export default function DashboardPage() {
           </div>
         </motion.div>
 
+        {/* Mortgage rate estimate */}
+        <motion.div variants={fadeUp} custom={4} className="bg-card rounded-xl p-6 shadow-card">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-semibold">Estimated mortgage rate</h3>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button type="button" className="text-muted-foreground hover:text-foreground transition-colors">
+                      <Info className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    This is an estimate. Actual rates can vary by lender, fees, and market conditions.
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">
+                Based on your credit score and state profile data.
+              </p>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => setShowRateSuggestions(true)}>
+              How to improve
+            </Button>
+          </div>
+          <div className="mt-4">
+            {mortgageRates ? (
+              <div>
+                <div className="flex items-end gap-2">
+                  <p className="text-3xl font-bold text-primary">
+                    {mortgageRates.lowRate.toFixed(3)}% - {mortgageRates.highRate.toFixed(3)}%
+                  </p>
+                  {mortgageRates.asOf && (
+                    <p className="text-xs text-muted-foreground pb-1">as of {mortgageRates.asOf}</p>
+                  )}
+                </div>
+              </div>
+            ) : mortgageRatesError ? (
+              <p className="text-sm text-muted-foreground">
+                {mortgageRatesError instanceof Error
+                  ? mortgageRatesError.message
+                  : "Unable to load mortgage rates right now."}
+              </p>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Set your Home State in Profile to see your estimated rate range.
+              </p>
+            )}
+          </div>
+        </motion.div>
+
         {/* CTA buttons */}
-        <motion.div variants={fadeUp} custom={4} className="grid sm:grid-cols-2 gap-4">
+        <motion.div variants={fadeUp} custom={5} className="grid sm:grid-cols-2 gap-4">
           <Button asChild size="lg" className="h-auto py-4 justify-start gap-3">
             <Link to="/listings">
               <Building2 className="h-5 w-5" />
@@ -210,6 +272,40 @@ export default function DashboardPage() {
             </Link>
           </Button>
         </motion.div>
+
+        <Dialog open={showRateSuggestions} onOpenChange={setShowRateSuggestions}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Ways to improve your mortgage rate</DialogTitle>
+              <DialogDescription>
+                Small improvements can make a meaningful difference in monthly payment and total interest.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3 text-sm">
+              <div className="flex items-start gap-2">
+                <Percent className="h-4 w-4 mt-0.5 text-primary" />
+                <p>
+                  <span className="font-medium">Increase down payment:</span> A larger down payment may lower LTV
+                  and improve your offered rate.
+                </p>
+              </div>
+              <div className="flex items-start gap-2">
+                <TrendingUp className="h-4 w-4 mt-0.5 text-primary" />
+                <p>
+                  <span className="font-medium">Improve credit score:</span> Paying balances down and making on-time
+                  payments can move you into better pricing tiers.
+                </p>
+              </div>
+              <div className="flex items-start gap-2">
+                <DollarSign className="h-4 w-4 mt-0.5 text-primary" />
+                <p>
+                  <span className="font-medium">Compare lenders:</span> Ask for multiple quotes since rates and fees
+                  vary between lenders.
+                </p>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </motion.div>
     </div>
   );

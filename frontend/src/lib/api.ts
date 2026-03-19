@@ -39,8 +39,19 @@ export type Progress = {
   contributionGoal: number | null;
   monthlyIncome: number | null;
   monthlyExpenses: number | null;
+  homeState: string | null;
   timeHorizon: string | null;
   desiredZipCodes: string | null;
+};
+
+export type MortgageRateEstimate = {
+  state: string;
+  lowRate: number;
+  highRate: number;
+  sampleCount: number;
+  asOf: string | null;
+  source: string;
+  isFallback?: boolean;
 };
 
 function progressHeaders(userId: number) {
@@ -83,6 +94,7 @@ export async function updateProgress(
     creditScore: number | null;
     monthlyIncome: number | null;
     monthlyExpenses: number | null;
+    homeState: string | null;
     timeHorizon: string | null;
     desiredZipCodes: string | null;
     contributionGoal: number | null;
@@ -184,5 +196,14 @@ export async function getHome(homeId: number): Promise<Home> {
   const res = await fetch(`${API_BASE}/api/homes/${homeId}`);
   const data = await res.json();
   if (!res.ok) throw new Error(data.error ?? "Failed to load home");
+  return data;
+}
+
+export async function getMortgageRates(userId: number): Promise<MortgageRateEstimate> {
+  const res = await fetch(`${API_BASE}/api/mortgage/rates`, {
+    headers: { "X-User-Id": String(userId) },
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error ?? "Failed to load mortgage rate estimate");
   return data;
 }

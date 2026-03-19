@@ -7,8 +7,8 @@ import heroHome from "@/assets/hero-home.jpg";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
-import { getProgress, getWishlist, createHome, updateHome, deleteHome, type Home } from "@/lib/api";
-import { calculateDownPayment, calculateRemainingSavings, calculateAffordabilityTimeline } from "@/lib/affordability";
+import { getProgress, getWishlist, createHome, updateHome, deleteHome, getMortgageRates, type Home } from "@/lib/api";
+import { calculateDownPayment, calculateRemainingSavings, calculateAffordabilityTimeline, calculateMonthlyPayment } from "@/lib/affordability";
 import { AddHouseModal, type HouseFormValues } from "@/components/saved-homes/AddHouseModal";
 import { HomeCard } from "@/components/saved-homes/HomeCard";
 import {
@@ -48,6 +48,14 @@ export default function ListingsPage() {
     queryKey: ["progress", user?.UserID],
     queryFn: () => getProgress(user!.UserID),
     enabled: !!user?.UserID,
+  });
+
+  const { data: mortgageRates, error: mortgageRatesError } = useQuery({
+    queryKey: ["mortgageRates", user?.UserID, progress?.homeState, progress?.creditScore, progress?.downPaymentPercentage],
+    queryFn: () => getMortgageRates(user!.UserID),
+    enabled: !!user?.UserID && !!progress?.homeState,
+    staleTime: 10 * 60 * 1000,
+    retry: 1,
   });
 
   const {
@@ -373,6 +381,20 @@ export default function ListingsPage() {
             const remainingSavings = calculateRemainingSavings(downPaymentNeeded, progress?.amountSaved);
             const monthlySavings = progress?.contributionGoal ?? null;
             const timeline = calculateAffordabilityTimeline(remainingSavings, monthlySavings);
+            const loanPrincipal =
+              home.Price != null && downPaymentNeeded > 0 ? Math.max(0, home.Price - downPaymentNeeded) : 0;
+            const monthlyPaymentRange =
+              mortgageRates && loanPrincipal > 0
+                ? (() => {
+                    const low = calculateMonthlyPayment(loanPrincipal, mortgageRates.lowRate, 30);
+                    const high = calculateMonthlyPayment(loanPrincipal, mortgageRates.highRate, 30);
+                    const min = Math.min(low, high);
+                    const max = Math.max(low, high);
+                    return `$${Math.round(min).toLocaleString()} - $${Math.round(max).toLocaleString()}/mo`;
+                  })()
+                : mortgageRatesError instanceof Error
+                ? mortgageRatesError.message
+                : null;
 
             return (
               <HomeCard
@@ -384,6 +406,7 @@ export default function ListingsPage() {
                 downPaymentNeeded={downPaymentNeeded}
                 remainingSavings={remainingSavings}
                 timelineLabel={timeline?.label ?? null}
+                monthlyPaymentRange={monthlyPaymentRange}
                 onEdit={(h) => setEditHome(h)}
                 onDelete={(h) => setDeleteHomeTarget(h)}
               />
