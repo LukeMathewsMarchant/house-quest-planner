@@ -290,6 +290,53 @@ When available, the timeline includes:
 *   `remainingMonths` — leftover months after full years
 *   `label` — formatted string for display in the UI
 
+## Mortgage Rate Estimate and Monthly Payment Ranges
+The application includes a mortgage-rate estimate workflow used by the Dashboard and Saved Homes pages.
+
+### Inputs used
+Rate estimates are based on profile data in `Progress`, including:
+*   **Credit Score**
+*   **Down Payment Percentage**
+*   **Home State** (2-letter state code)
+
+These values can be set in both onboarding and profile flows.
+
+### Dashboard rate widget
+The Dashboard includes an **Estimated mortgage rate** section that shows:
+*   A low-to-high estimated rate range
+*   A tooltip explaining this is an estimate and actual rates can vary
+*   A “How to improve” action with suggestions such as improving credit, increasing down payment, and comparing lenders
+
+If required profile inputs are missing, the widget prompts the user to complete profile data first.
+
+### External API + fallback behavior
+The backend endpoint `GET /api/mortgage/rates` attempts to fetch live rate data from Homebuyer.com.
+
+If external data is unavailable (for example, API authorization issues or upstream failures), the backend falls back to an internal estimator so the UI remains functional.
+
+Fallback estimates are derived from:
+*   Credit score bucket adjustments
+*   Down payment/LTV adjustments
+*   Small state-level adjustment factors
+
+This keeps affordability and payment calculations available even when the external API is down.
+
+### Saved Homes monthly payment estimate
+Saved Home cards display an **Estimated monthly payment** range using:
+*   The estimated mortgage rate range
+*   30-year fixed principal-and-interest amortization math
+*   Loan principal approximated as:  
+    `Home Price - Down Payment Needed`
+
+This is an estimate for planning only and does not include taxes, insurance, HOA dues, or lender-specific fees.
+
+### Database update for this feature
+The feature adds `HomeState` to `Progress`.
+
+*   Included in `db/schema.sql`
+*   Migration for existing databases:  
+    `db/migrations/003_add_progress_home_state.sql`
+
 ### COMPLETE 
 * Saving Homes
 * Putting in your budget
