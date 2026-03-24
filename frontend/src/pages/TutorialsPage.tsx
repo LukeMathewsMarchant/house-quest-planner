@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
-import { tutorialCategories } from "@/data/tutorials";
+import { ArrowRight, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { tutorialCategories, TUTORIALS_YOUTUBE_CHANNEL_URL } from "@/data/tutorials";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -10,12 +11,20 @@ const fadeUp = {
 
 export default function TutorialsPage() {
   return (
-    <div className="container py-10 max-w-4xl">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
-        <h1 className="text-3xl font-bold mb-2">Learn As You Go</h1>
-        <p className="text-muted-foreground">
-          Choose a topic to watch video tutorials on saving, mortgages, inspecting a home, and more.
-        </p>
+    <div className="container py-10 max-w-5xl">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Learn As You Go</h1>
+          <p className="text-muted-foreground max-w-2xl">
+            Choose a topic to watch video tutorials on saving, mortgages, inspecting a home, and more.
+          </p>
+        </div>
+        <Button variant="outline" asChild className="shrink-0 self-start sm:self-auto">
+          <a href={TUTORIALS_YOUTUBE_CHANNEL_URL} target="_blank" rel="noopener noreferrer">
+            Learn more on YouTube
+            <ExternalLink className="ml-2 h-4 w-4" aria-hidden />
+          </a>
+        </Button>
       </motion.div>
 
       <motion.div
