@@ -48,6 +48,7 @@ export default function OnboardingPage() {
   const [monthlyExpenses, setMonthlyExpenses] = useState("");
   const [creditScore, setCreditScore] = useState([720]);
   const [timeHorizon, setTimeHorizon] = useState("");
+  const [homeState, setHomeState] = useState("");
   const [zipCodes, setZipCodes] = useState("");
   const [amountAlreadySaved, setAmountAlreadySaved] = useState("");
   const [monthlyContribution, setMonthlyContribution] = useState("");
@@ -80,6 +81,7 @@ export default function OnboardingPage() {
     setMonthlyExpenses(progress.monthlyExpenses != null ? String(progress.monthlyExpenses) : "");
     setCreditScore([progress.creditScore ?? 720]);
     setTimeHorizon(progress.timeHorizon ?? "");
+    setHomeState(progress.homeState ?? "");
     setZipCodes(progress.desiredZipCodes ?? "");
     setAmountAlreadySaved(progress.amountSaved ? String(Math.round(progress.amountSaved)) : "");
     setMonthlyContribution(
@@ -96,6 +98,7 @@ export default function OnboardingPage() {
         creditScore: creditScore[0],
         monthlyIncome: monthlyIncome ? parseInt(monthlyIncome, 10) : null,
         monthlyExpenses: monthlyExpenses ? parseInt(monthlyExpenses, 10) : null,
+        homeState: homeState || null,
         timeHorizon: timeHorizon || null,
         desiredZipCodes: zipCodes.trim() || null,
         contributionGoal: monthlyContribution ? parseFloat(monthlyContribution) : null,
@@ -410,15 +413,28 @@ export default function OnboardingPage() {
                 </p>
               </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="zip-codes">Zip codes</Label>
-              <Input
-                id="zip-codes"
-                type="text"
-                value={zipCodes}
-                onChange={(e) => setZipCodes(e.target.value)}
-                placeholder="83616, 83642, 83646"
-              />
+            <div className="grid sm:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="home-state">Home state</Label>
+                <Input
+                  id="home-state"
+                  type="text"
+                  value={homeState}
+                  onChange={(e) => setHomeState(e.target.value.toUpperCase().slice(0, 2))}
+                  placeholder="UT"
+                  maxLength={2}
+                />
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label htmlFor="zip-codes">Zip codes</Label>
+                <Input
+                  id="zip-codes"
+                  type="text"
+                  value={zipCodes}
+                  onChange={(e) => setZipCodes(e.target.value)}
+                  placeholder="83616, 83642, 83646"
+                />
+              </div>
             </div>
           </motion.div>
 

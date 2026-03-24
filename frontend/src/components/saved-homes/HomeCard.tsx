@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Home as HomeIcon, Bed, Bath, Square, Pencil, Trash2 } from "lucide-react";
+import { motion, type Variants } from "framer-motion";
+import { Home as HomeIcon, Pencil, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -10,11 +10,12 @@ import type { Home, Progress as UserProgress } from "@/lib/api";
 type Props = {
   home: Home;
   index: number;
-  fadeUp: typeof import("framer-motion").Variants;
+  fadeUp: Variants;
   progress: UserProgress | null;
   downPaymentNeeded: number;
   remainingSavings: number;
   timelineLabel: string | null;
+  monthlyPaymentRange: string | null;
   onEdit?: (home: Home) => void;
   onDelete?: (home: Home) => void;
 };
@@ -27,6 +28,7 @@ export function HomeCard({
   downPaymentNeeded,
   remainingSavings,
   timelineLabel,
+  monthlyPaymentRange,
   onEdit,
   onDelete,
 }: Props) {
@@ -114,6 +116,15 @@ export function HomeCard({
             </p>
           </div>
 
+          <div className="space-y-1 pt-1">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              Estimated monthly payment
+            </p>
+            <p className="text-sm font-medium">
+              {monthlyPaymentRange ?? "Set Home State + down payment % in Profile to see this."}
+            </p>
+          </div>
+
           <div className="pt-4 mt-auto flex flex-col gap-2">
             <div className="flex gap-2">
               <Link
@@ -129,7 +140,7 @@ export function HomeCard({
                   rel="noreferrer"
                   className="flex-1 inline-flex items-center justify-center rounded-md border border-input bg-background text-sm font-medium h-9 px-3 py-1.5 hover:bg-accent hover:text-accent-foreground transition-colors"
                 >
-                  Open Zillow
+                  Open Listing
                 </a>
               )}
             </div>
@@ -152,14 +163,6 @@ export function HomeCard({
                 <Trash2 className="h-4 w-4 mr-2" />
                 Delete
               </Button>
-            </div>
-            <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-              <Bed className="h-3 w-3" />
-              <span>{home.Bedrooms ?? "—"} bd</span>
-              <Bath className="h-3 w-3" />
-              <span>{home.Bathrooms ?? "—"} ba</span>
-              <Square className="h-3 w-3" />
-              <span>{home.SquareFeet != null ? `${home.SquareFeet.toLocaleString()} sqft` : "— sqft"}</span>
             </div>
           </div>
         </CardContent>

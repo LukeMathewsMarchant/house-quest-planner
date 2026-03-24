@@ -41,3 +41,15 @@ export function calculateAffordabilityTimeline(
   return { months, years, remainingMonths, label };
 }
 
+export function calculateMonthlyPayment(
+  loanAmount: number,
+  annualRatePercent: number,
+  years = 30,
+): number {
+  if (loanAmount <= 0 || annualRatePercent <= 0 || years <= 0) return 0;
+  const monthlyRate = annualRatePercent / 100 / 12;
+  const n = years * 12;
+  const factor = Math.pow(1 + monthlyRate, n);
+  return (loanAmount * monthlyRate * factor) / (factor - 1);
+}
+

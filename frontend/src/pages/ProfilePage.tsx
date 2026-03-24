@@ -35,6 +35,7 @@ export default function ProfilePage() {
   const [monthlyContribution, setMonthlyContribution] = useState("");
   const [creditScore, setCreditScore] = useState([720]);
   const [timeHorizon, setTimeHorizon] = useState("");
+  const [homeState, setHomeState] = useState("");
   const [zipCodes, setZipCodes] = useState("");
 
   const { data: progress, isLoading } = useQuery({
@@ -62,6 +63,7 @@ export default function ProfilePage() {
     }
     setCreditScore([progress.creditScore ?? 720]);
     setTimeHorizon(progress.timeHorizon ?? "");
+    setHomeState(progress.homeState ?? "");
     setZipCodes(progress.desiredZipCodes ?? "");
   }, [progress]);
 
@@ -74,12 +76,13 @@ export default function ProfilePage() {
         creditScore: creditScore[0],
         monthlyIncome: monthlyIncome ? parseInt(monthlyIncome, 10) : null,
         monthlyExpenses: monthlyExpenses ? parseInt(monthlyExpenses, 10) : null,
+        homeState: homeState || null,
         timeHorizon: timeHorizon || null,
         desiredZipCodes: zipCodes.trim() || null,
         contributionGoal: monthlyContribution ? parseFloat(monthlyContribution) : null,
       }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["progress", user?.UserID] });
+    onSuccess: (updatedProgress) => {
+      queryClient.setQueryData(["progress", user?.UserID], updatedProgress);
       toast({
         title: "Profile saved",
         description: "We’ve updated your plan with your latest numbers.",
@@ -341,16 +344,31 @@ export default function ProfilePage() {
                 <p className="text-sm text-muted-foreground">Zip codes where you're interested in buying</p>
               </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="zip-codes">Zip Codes</Label>
-              <Input
-                id="zip-codes"
-                type="text"
-                value={zipCodes}
-                onChange={(e) => setZipCodes(e.target.value)}
-                placeholder="83616, 83642, 83646 (comma-separated)"
-              />
-              <p className="text-xs text-muted-foreground">Enter multiple zip codes separated by commas</p>
+            <div className="grid sm:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="home-state">Home State</Label>
+                <Input
+                  id="home-state"
+                  type="text"
+                  value={homeState}
+                  onChange={(e) => setHomeState(e.target.value.toUpperCase().slice(0, 2))}
+                  placeholder="UT"
+                  maxLength={2}
+                />
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label htmlFor="zip-codes">Zip Codes</Label>
+                <Input
+                  id="zip-codes"
+                  type="text"
+                  value={zipCodes}
+                  onChange={(e) => setZipCodes(e.target.value)}
+                  placeholder="83616, 83642, 83646 (comma-separated)"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Enter multiple zip codes separated by commas
+                </p>
+              </div>
             </div>
           </motion.div>
 
