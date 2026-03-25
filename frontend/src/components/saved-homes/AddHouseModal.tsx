@@ -140,6 +140,9 @@ export function AddHouseModal({
   const [bedrooms, setBedrooms] = useState("");
   const [bathrooms, setBathrooms] = useState("");
   const [squareFeet, setSquareFeet] = useState("");
+  const [usePresets, setUsePresets] = useState(false);
+
+  const PRESETS = { price: "450000", bedrooms: "3", squareFeet: "2000" };
 
   const reset = () => {
     setZillowUrl("");
@@ -151,6 +154,7 @@ export function AddHouseModal({
     setBedrooms("");
     setBathrooms("");
     setSquareFeet("");
+    setUsePresets(false);
   };
 
   useEffect(() => {
@@ -278,6 +282,30 @@ export function AddHouseModal({
                 onChange={(e) => setZip(e.target.value.replace(/\D/g, "").slice(0, 5))}
               />
             </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              id="use-presets"
+              type="checkbox"
+              checked={usePresets}
+              onChange={(e) => {
+                const checked = e.target.checked;
+                setUsePresets(checked);
+                if (checked) {
+                  setPrice(PRESETS.price);
+                  setBedrooms(PRESETS.bedrooms);
+                  setSquareFeet(PRESETS.squareFeet);
+                } else {
+                  setPrice("");
+                  setBedrooms("");
+                  setSquareFeet("");
+                }
+              }}
+              className="h-4 w-4 accent-primary cursor-pointer"
+            />
+            <Label htmlFor="use-presets" className="cursor-pointer text-sm font-normal text-muted-foreground">
+              Use typical values ($450,000 · 3 bd · 2,000 sqft)
+            </Label>
           </div>
           <div className="grid sm:grid-cols-3 gap-3">
             <div className="space-y-2">

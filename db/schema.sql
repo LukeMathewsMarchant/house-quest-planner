@@ -28,6 +28,7 @@ CREATE TABLE "Progress" (
   "ContributionGoal" REAL,
   "MonthlyIncome" INTEGER,
   "MonthlyExpenses" INTEGER,
+  "HomeState" VARCHAR(2),
   "TimeHorizon" VARCHAR(50),
   "DesiredZipCodes" TEXT
 );
