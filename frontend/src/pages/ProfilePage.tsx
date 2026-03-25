@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { DollarSign, CreditCard, Calendar, MapPin, TrendingUp, Save, Percent } from "lucide-react";
+import { DollarSign, CreditCard, Calendar, MapPin, TrendingUp, Save, Percent, PiggyBank } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,6 +37,7 @@ export default function ProfilePage() {
   const [timeHorizon, setTimeHorizon] = useState("");
   const [homeState, setHomeState] = useState("");
   const [zipCodes, setZipCodes] = useState("");
+  const [amountSaved, setAmountSaved] = useState("");
 
   const { data: progress, isLoading } = useQuery({
     queryKey: ["progress", user?.UserID],
@@ -65,6 +66,7 @@ export default function ProfilePage() {
     setTimeHorizon(progress.timeHorizon ?? "");
     setHomeState(progress.homeState ?? "");
     setZipCodes(progress.desiredZipCodes ?? "");
+    setAmountSaved(progress.amountSaved != null ? String(Math.round(progress.amountSaved)) : "");
   }, [progress]);
 
   const saveMutation = useMutation({
@@ -72,7 +74,7 @@ export default function ProfilePage() {
       updateProgress(user!.UserID, {
         budget: budgetHomePrice ? parseInt(budgetHomePrice, 10) : null,
         downPaymentPercentage: downPaymentPct ? parseFloat(downPaymentPct) : null,
-        amountSaved: progress?.amountSaved ?? 0,
+        amountSaved: amountSaved ? parseFloat(amountSaved) : 0,
         creditScore: creditScore[0],
         monthlyIncome: monthlyIncome ? parseInt(monthlyIncome, 10) : null,
         monthlyExpenses: monthlyExpenses ? parseInt(monthlyExpenses, 10) : null,
@@ -186,8 +188,42 @@ export default function ProfilePage() {
             )}
           </motion.div>
 
-          {/* Monthly Income, Expenses & Contribution */}
+          {/* Current Amount Saved */}
           <motion.div variants={fadeUp} custom={2} className="bg-card rounded-xl p-6 shadow-card space-y-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <PiggyBank className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold">Current Amount Saved</h2>
+                <p className="text-sm text-muted-foreground">
+                  The total you've saved toward your down payment so far. Update this if your savings change.
+                </p>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="amount-saved">Amount Saved</Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                <Input
+                  id="amount-saved"
+                  type="number"
+                  value={amountSaved}
+                  onChange={(e) => setAmountSaved(e.target.value)}
+                  className="pl-7"
+                  placeholder="0"
+                  min="0"
+                  step="1"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Life happens — if you need to dip into savings, update this to keep your dashboard accurate.
+              </p>
+            </div>
+          </motion.div>
+
+          {/* Monthly Income, Expenses & Contribution */}
+          <motion.div variants={fadeUp} custom={3} className="bg-card rounded-xl p-6 shadow-card space-y-4">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                 <TrendingUp className="h-5 w-5 text-primary" />
@@ -269,7 +305,7 @@ export default function ProfilePage() {
           </motion.div>
 
           {/* Credit Score */}
-          <motion.div variants={fadeUp} custom={3} className="bg-card rounded-xl p-6 shadow-card space-y-4">
+          <motion.div variants={fadeUp} custom={4} className="bg-card rounded-xl p-6 shadow-card space-y-4">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                 <CreditCard className="h-5 w-5 text-primary" />
@@ -313,7 +349,7 @@ export default function ProfilePage() {
           </motion.div>
 
           {/* Time Horizon */}
-          <motion.div variants={fadeUp} custom={4} className="bg-card rounded-xl p-6 shadow-card space-y-4">
+          <motion.div variants={fadeUp} custom={5} className="bg-card rounded-xl p-6 shadow-card space-y-4">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                 <Calendar className="h-5 w-5 text-primary" />
@@ -343,7 +379,7 @@ export default function ProfilePage() {
           </motion.div>
 
           {/* Preferred Zip Codes */}
-          <motion.div variants={fadeUp} custom={5} className="bg-card rounded-xl p-6 shadow-card space-y-4">
+          <motion.div variants={fadeUp} custom={6} className="bg-card rounded-xl p-6 shadow-card space-y-4">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                 <MapPin className="h-5 w-5 text-primary" />
@@ -382,7 +418,7 @@ export default function ProfilePage() {
           </motion.div>
 
           {/* Submit Button */}
-          <motion.div variants={fadeUp} custom={6}>
+          <motion.div variants={fadeUp} custom={7}>
             <Button type="submit" size="lg" className="w-full sm:w-auto" disabled={saveMutation.isPending}>
               <Save className="h-4 w-4 mr-2" />
               {saveMutation.isPending ? "Saving…" : "Save Profile"}
