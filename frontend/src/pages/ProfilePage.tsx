@@ -199,7 +199,7 @@ export default function ProfilePage() {
                 </p>
               </div>
             </div>
-            <div className="grid sm:grid-cols-3 gap-4">
+            <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="monthly-income">Monthly Income</Label>
                 <div className="relative">
@@ -230,8 +230,21 @@ export default function ProfilePage() {
                   />
                 </div>
               </div>
+            </div>
+
+            <div className="pt-2 border-t space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Estimated monthly savings:{" "}
+                <span className="font-semibold text-foreground">
+                  {monthlySavings != null ? `$${monthlySavings.toLocaleString()}` : "—"}
+                </span>
+                <span className="text-xs text-muted-foreground"> (income − expenses)</span>
+              </p>
+
               <div className="space-y-2">
-                <Label htmlFor="monthly-contribution">Monthly contribution goal</Label>
+                <Label htmlFor="monthly-contribution">
+                  How much of your monthly savings would you like to contribute toward your down payment?
+                </Label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
                   <Input
@@ -242,21 +255,17 @@ export default function ProfilePage() {
                     className="pl-7"
                     placeholder={monthlySavings != null ? String(monthlySavings) : "500"}
                     min="0"
+                    max={monthlySavings != null && monthlySavings > 0 ? monthlySavings : undefined}
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Used to estimate how long it will take to reach your down payment goal.
+                  This is the amount we use to estimate your timeline on the Dashboard.
+                  {monthlySavings != null && monthlySavings > 0
+                    ? ` (Your estimated savings are $${monthlySavings.toLocaleString()}/mo.)`
+                    : ""}
                 </p>
               </div>
             </div>
-            {monthlySavings != null && (
-              <p className="text-sm text-muted-foreground pt-2 border-t">
-                Monthly savings:{" "}
-                <span className="font-semibold text-foreground">
-                  ${monthlySavings.toLocaleString()}
-                </span>
-              </p>
-            )}
           </motion.div>
 
           {/* Credit Score */}
