@@ -24,10 +24,19 @@ function parseHyphenSlug(slug: string): Partial<HouseFormValues> {
     if (SUFFIXES.has(tokens[i].toLowerCase())) { suffixIdx = i; break; }
   }
 
-  if (suffixIdx >= 0) {
+  // Fallback: cardinal directions (grid-style addresses like "891 W 600 S")
+  const CARDINALS = new Set(["n","s","e","w","ne","nw","se","sw"]);
+  let boundaryIdx = suffixIdx;
+  if (boundaryIdx < 0) {
+    for (let i = stateIdx - 1; i >= 0; i--) {
+      if (CARDINALS.has(tokens[i].toLowerCase())) { boundaryIdx = i; break; }
+    }
+  }
+
+  if (boundaryIdx >= 0) {
     return {
-      streetAddress: tokens.slice(0, suffixIdx + 1).map(cap).join(" "),
-      city: tokens.slice(suffixIdx + 1, stateIdx).map(cap).join(" "),
+      streetAddress: tokens.slice(0, boundaryIdx + 1).map(cap).join(" "),
+      city: tokens.slice(boundaryIdx + 1, stateIdx).map(cap).join(" "),
       state: tokens[stateIdx].toUpperCase(),
       zip: tokens[zipIdx],
     };
