@@ -379,7 +379,8 @@ The feature adds `HomeState` to `Progress`.
 * Links to more tutorials
 * Timeline contribution.
 * Removed extra add button.
-
+* Added a tooltip to help users with setting up accounts
+* Added a way to edit money saved
 
 
 
