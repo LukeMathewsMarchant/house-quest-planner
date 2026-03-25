@@ -346,6 +346,7 @@ The feature adds `HomeState` to `Progress`.
 * fliter listings
 * Edit house listing
 * It opens in zillow
+* Completed removing an extra "Add Home" button from the listings page
 
 ### NOT COMPLETE
 * Add a info card on the profile page when a user sets their down payment.
