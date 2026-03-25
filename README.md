@@ -351,6 +351,35 @@ The feature adds `HomeState` to `Progress`.
 ### NOT COMPLETE
 * Add a info card on the profile page when a user sets their down payment.
 
+  ###  Tutorials Page 
+- Added a tutorials page
+- Added videos to the page
+- Links to more info on youtube
+
+### Main Picture
+- Replaced the main picture so it wasn't AI
+
+### Personal Profile 
+*Monthly Finances*
+- Changes contribution underneath the savings calculation.
+
+### Saved Homes 
+- Added saved values.
+### Saved Homes 
+- added a timeline of how much you need to contribute to buy the home.
+
+
+### Complete
+* required preset.
+* Estimation calculator.
+* Contribution for monthly finances in person profile
+* Changed main picture.
+* Tutorials page
+* Videos to the tutorials page
+* Links to more tutorials
+* Timeline contribution.
+* Removed extra add button.
+
 
 
 
