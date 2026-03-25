@@ -1,8 +1,13 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, DollarSign, BookOpen, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/hero-home.jpg";
+import carousel1 from "@/assets/carosel-1.jpg";
+import carousel2 from "@/assets/carosel-2.jpg";
+import carousel3 from "@/assets/carosel-3.jpg";
+import carousel4 from "@/assets/carosel-4.jpg";
 
 const testimonials = [
   { name: "Spencer Hilton", role: "First-time Buyer", quote: "HBH made home buying feel possible, even on my budget.", avatar: "SH" },
@@ -15,13 +20,34 @@ const fadeUp = {
   visible: (i: number) => ({ opacity: 1, y: 0, transition: { delay: i * 0.15, duration: 0.5 } }),
 };
 
+const HERO_IMAGES = [heroImage, carousel1, carousel2, carousel3, carousel4];
+
 export default function LandingPage() {
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setActiveImageIndex((currentIndex) => (currentIndex + 1) % HERO_IMAGES.length);
+    }, 5000);
+
+    return () => window.clearInterval(intervalId);
+  }, []);
+
   return (
     <div>
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
-          <img src={heroImage} alt="Beautiful craftsman home at sunset" className="h-full w-full object-cover" />
+          {HERO_IMAGES.map((imageSrc, index) => (
+            <img
+              key={imageSrc}
+              src={imageSrc}
+              alt="Beautiful homes for sale"
+              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
+                index === activeImageIndex ? "opacity-100" : "opacity-0"
+              }`}
+            />
+          ))}
           <div className="absolute inset-0 bg-gradient-to-r from-foreground/80 via-foreground/60 to-foreground/30" />
         </div>
         <div className="relative container py-24 md:py-36 lg:py-44">
