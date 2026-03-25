@@ -20,6 +20,7 @@ import {
   calculateDownPayment,
   calculateRemainingSavings,
   calculateAffordabilityTimeline,
+  calculateSavingsNeededForTimeline,
   calculateMonthlyPayment,
 } from "@/lib/affordability";
 import { AddHouseModal, type HouseFormValues } from "@/components/saved-homes/AddHouseModal";
@@ -387,6 +388,25 @@ export default function ListingsPage() {
               const remainingSavings = calculateRemainingSavings(downPaymentNeeded, progress?.amountSaved);
               const monthlySavings = progress?.contributionGoal ?? null;
               const timeline = calculateAffordabilityTimeline(remainingSavings, monthlySavings);
+              const savingsNeeded = calculateSavingsNeededForTimeline(remainingSavings, progress?.timeHorizon);
+              const timelineSavingsNeededLabel = savingsNeeded
+                ? `$${Math.round(savingsNeeded.monthlyNeeded).toLocaleString()}/mo (${savingsNeeded.targetLabel})`
+                : null;
+              const timelineSavingsIncreaseLabel = (() => {
+                if (!savingsNeeded) return null;
+                if (monthlySavings == null) return null;
+
+                if (savingsNeeded.monthlyNeeded <= 0) {
+                  return "You're already there based on your current savings.";
+                }
+
+                if (savingsNeeded.monthlyNeeded <= monthlySavings) {
+                  return "You're already saving enough to hit your timeline.";
+                }
+
+                const increase = Math.ceil(savingsNeeded.monthlyNeeded - monthlySavings);
+                return `That's about +$${increase.toLocaleString()}/mo more than you're saving now.`;
+              })();
               const loanPrincipal =
                 home.Price != null && downPaymentNeeded > 0 ? Math.max(0, home.Price - downPaymentNeeded) : 0;
               const monthlyPaymentRange =
@@ -412,6 +432,8 @@ export default function ListingsPage() {
                   downPaymentNeeded={downPaymentNeeded}
                   remainingSavings={remainingSavings}
                   timelineLabel={timeline?.label ?? null}
+                  timelineSavingsNeededLabel={timelineSavingsNeededLabel}
+                  timelineSavingsIncreaseLabel={timelineSavingsIncreaseLabel}
                   monthlyPaymentRange={monthlyPaymentRange}
                   onEdit={(h) => setEditHome(h)}
                   onDelete={(h) => setDeleteHomeTarget(h)}

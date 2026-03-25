@@ -41,6 +41,53 @@ export function calculateAffordabilityTimeline(
   return { months, years, remainingMonths, label };
 }
 
+function timeHorizonToTargetMonths(timeHorizon: string | null | undefined): number | null {
+  if (!timeHorizon) return null;
+  switch (timeHorizon) {
+    case "3-months":
+      return 3;
+    case "6-months":
+      return 6;
+    case "1-year":
+      return 12;
+    case "2-years":
+      return 24;
+    case "3-years":
+      return 36;
+    case "5-years":
+      return 60;
+    case "exploring":
+      return null;
+    default:
+      return null;
+  }
+}
+
+export function calculateSavingsNeededForTimeline(
+  remainingSavings: number,
+  timeHorizon: string | null | undefined,
+): {
+  targetMonths: number;
+  monthlyNeeded: number;
+  targetLabel: string;
+} | null {
+  const targetMonths = timeHorizonToTargetMonths(timeHorizon);
+  if (targetMonths == null) return null;
+
+  // If they already have enough cash for the down payment, they're already on track.
+  if (remainingSavings <= 0) {
+    return { targetMonths, monthlyNeeded: 0, targetLabel: `within ${targetMonths} month${targetMonths === 1 ? "" : "s"}` };
+  }
+
+  // Round up so the estimate is achievable.
+  const monthlyNeeded = Math.ceil(remainingSavings / targetMonths);
+  return {
+    targetMonths,
+    monthlyNeeded,
+    targetLabel: `within ${targetMonths} month${targetMonths === 1 ? "" : "s"}`,
+  };
+}
+
 export function calculateMonthlyPayment(
   loanAmount: number,
   annualRatePercent: number,

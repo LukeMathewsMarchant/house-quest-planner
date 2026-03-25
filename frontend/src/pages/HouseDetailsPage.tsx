@@ -12,6 +12,7 @@ import {
   calculateDownPayment,
   calculateRemainingSavings,
   calculateAffordabilityTimeline,
+  calculateSavingsNeededForTimeline,
 } from "@/lib/affordability";
 
 const fadeUp = {
@@ -78,6 +79,25 @@ export default function HouseDetailsPage() {
   const remainingSavings = calculateRemainingSavings(downPaymentNeeded, progress.amountSaved);
   const monthlySavings = progress.contributionGoal ?? null;
   const timeline = calculateAffordabilityTimeline(remainingSavings, monthlySavings);
+  const savingsNeeded = calculateSavingsNeededForTimeline(remainingSavings, progress.timeHorizon);
+  const timelineSavingsNeededLabel = savingsNeeded
+    ? `$${Math.round(savingsNeeded.monthlyNeeded).toLocaleString()}/mo (${savingsNeeded.targetLabel})`
+    : null;
+  const timelineSavingsIncreaseLabel = (() => {
+    if (!savingsNeeded) return null;
+    if (monthlySavings == null) return null;
+
+    if (savingsNeeded.monthlyNeeded <= 0) {
+      return "You're already there based on your current savings.";
+    }
+
+    if (savingsNeeded.monthlyNeeded <= monthlySavings) {
+      return "You're already saving enough to hit your timeline.";
+    }
+
+    const increase = Math.ceil(savingsNeeded.monthlyNeeded - monthlySavings);
+    return `That's about +$${increase.toLocaleString()}/mo more than you're saving now.`;
+  })();
   const progressPercent = downPaymentNeeded > 0 ? Math.min(100, (progress.amountSaved / downPaymentNeeded) * 100) : 0;
 
   const cityState = [home.City, home.State].filter(Boolean).join(", ");
@@ -216,6 +236,16 @@ export default function HouseDetailsPage() {
                   {timeline?.label ?? "Add a contribution amount and down payment % to see this."}
                 </p>
               </div>
+
+              {timelineSavingsNeededLabel && (
+                <div className="pt-1">
+                  <p className="text-xs text-muted-foreground mb-1">Savings needed to hit your timeline</p>
+                  <p className="text-base font-semibold">{timelineSavingsNeededLabel}</p>
+                  {timelineSavingsIncreaseLabel && (
+                    <p className="text-xs text-muted-foreground mt-1">{timelineSavingsIncreaseLabel}</p>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </motion.div>

@@ -15,6 +15,8 @@ type Props = {
   downPaymentNeeded: number;
   remainingSavings: number;
   timelineLabel: string | null;
+  timelineSavingsNeededLabel?: string | null;
+  timelineSavingsIncreaseLabel?: string | null;
   monthlyPaymentRange: string | null;
   onEdit?: (home: Home) => void;
   onDelete?: (home: Home) => void;
@@ -28,6 +30,8 @@ export function HomeCard({
   downPaymentNeeded,
   remainingSavings,
   timelineLabel,
+  timelineSavingsNeededLabel,
+  timelineSavingsIncreaseLabel,
   monthlyPaymentRange,
   onEdit,
   onDelete,
@@ -115,6 +119,18 @@ export function HomeCard({
               {timelineLabel ?? "Add a monthly savings amount and down payment % to see this."}
             </p>
           </div>
+
+          {timelineSavingsNeededLabel && (
+            <div className="space-y-1 pt-1">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                Savings needed to hit your timeline
+              </p>
+              <p className="text-sm font-medium">{timelineSavingsNeededLabel}</p>
+              {timelineSavingsIncreaseLabel && (
+                <p className="text-xs text-muted-foreground">{timelineSavingsIncreaseLabel}</p>
+              )}
+            </div>
+          )}
 
           <div className="space-y-1 pt-1">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
