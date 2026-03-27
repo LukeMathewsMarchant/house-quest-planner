@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Home as HomeIcon, Plus } from "lucide-react";
+import { Home as HomeIcon, Plus, Map, ChevronDown, ChevronUp } from "lucide-react";
 import heroHome from "@/assets/hero-home.jpg";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,7 @@ import {
 } from "@/lib/affordability";
 import { AddHouseModal, type HouseFormValues } from "@/components/saved-homes/AddHouseModal";
 import { HomeCard } from "@/components/saved-homes/HomeCard";
+import { HomesMap } from "@/components/saved-homes/HomesMap";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -57,6 +58,7 @@ export default function ListingsPage() {
   const [city, setCity] = useState("");
   const [stateFilter, setStateFilter] = useState("");
   const [zip, setZip] = useState("");
+  const [mapOpen, setMapOpen] = useState(false);
 
   const hasActiveFilters = Boolean(
     minPrice || maxPrice || minBeds || minBaths || minSqft || city.trim() || stateFilter.trim() || zip.trim()
@@ -352,6 +354,35 @@ export default function ListingsPage() {
             </div>
           </div>
         </div>
+
+        {(homes?.length ?? 0) > 0 && (
+          <div className="mb-6 rounded-xl border bg-card shadow-sm overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setMapOpen(!mapOpen)}
+              className="w-full flex items-center justify-between gap-2 px-4 py-3 text-left hover:bg-accent/50 transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <Map className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium">Map View</span>
+                <span className="text-xs text-muted-foreground">
+                  — See where your saved homes are located
+                </span>
+              </div>
+              {mapOpen ? (
+                <ChevronUp className="h-4 w-4 text-muted-foreground" />
+              ) : (
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              )}
+            </button>
+            {mapOpen && (
+              <HomesMap
+                homes={filteredHomes}
+                className="h-[400px] border-t"
+              />
+            )}
+          </div>
+        )}
 
         {loadingHomes ? (
           <p className="text-muted-foreground">Loading your saved homes…</p>
