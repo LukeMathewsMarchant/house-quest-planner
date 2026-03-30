@@ -98,8 +98,17 @@ export default function DashboardPage() {
     return map[value] ?? null;
   }
 
+  function formatMonthsAsYearsMonths(months: number): string {
+    const years = Math.floor(months / 12);
+    const remainingMonths = months % 12;
+    if (years <= 0) return `${months} month${months === 1 ? "" : "s"}`;
+    if (remainingMonths === 0) return `${years} year${years === 1 ? "" : "s"}`;
+    return `${years} year${years === 1 ? "" : "s"} ${remainingMonths} month${remainingMonths === 1 ? "" : "s"}`;
+  }
+
   const timelineMonths = timeHorizonToMonths(timeHorizon);
   const currentTimeline = calculateAffordabilityTimeline(remainingSavings, monthlyContribution);
+  const timelineGoalLabel = timelineMonths != null ? formatMonthsAsYearsMonths(timelineMonths) : null;
   const requiredMonthly =
     remainingSavings > 0 && timelineMonths ? remainingSavings / timelineMonths : null;
   const deltaMonthly =
@@ -238,26 +247,29 @@ export default function DashboardPage() {
                   ${Math.round(requiredMonthly ?? 0).toLocaleString()}/mo
                 </p>
               </div>
-              <p className="text-sm text-muted-foreground">
-                (within {timelineMonths} months)
-              </p>
               {currentTimeline?.label && (
                 <p className="text-sm text-muted-foreground">
-                  At your current savings rate, it would take about {currentTimeline.label}.
+                  At your current savings rate, you&apos;d reach your down payment goal in {currentTimeline.label}.
                 </p>
               )}
-              {deltaMonthly != null && Math.abs(deltaMonthly) > 0.01 && (
+              {timelineGoalLabel && (
                 <p className="text-sm text-muted-foreground">
-                  That&apos;s about{" "}
-                  <span className={deltaMonthly >= 0 ? "text-primary" : "text-destructive"}>
-                    {deltaMonthly >= 0 ? "+" : "-"}$
-                    {Math.round(Math.abs(deltaMonthly)).toLocaleString()}/mo
-                  </span>{" "}
-                  more than you&apos;re saving now.
+                  Your timeline goal is to reach your down payment in {timelineGoalLabel}.
                 </p>
               )}
-              {deltaMonthly != null && Math.abs(deltaMonthly) <= 0.01 && (
-                <p className="text-sm text-muted-foreground">You&apos;re already on track for your timeline.</p>
+              {requiredMonthly != null && deltaMonthly != null && Math.abs(deltaMonthly) > 0.01 ? (
+                <p className="text-sm text-muted-foreground">
+                  To hit your timeline, you&apos;d need to save about $
+                  {Math.round(requiredMonthly).toLocaleString()}/mo (about{" "}
+                  <span className={deltaMonthly >= 0 ? "text-primary" : "text-destructive"}>
+                    {deltaMonthly >= 0 ? "+" : "-"}${Math.round(Math.abs(deltaMonthly)).toLocaleString()}/mo
+                  </span>{" "}
+                  more than you&apos;re saving now).
+                </p>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  To hit your timeline, you can keep your monthly savings rate and stay on track.
+                </p>
               )}
             </div>
           )}
