@@ -3,9 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Home as HomeIcon, Plus, Map, ChevronDown, ChevronUp } from "lucide-react";
+import { Home as HomeIcon, Plus, SlidersHorizontal } from "lucide-react";
 import heroHome from "@/assets/hero-home.jpg";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   getProgress,
@@ -59,6 +61,7 @@ export default function ListingsPage() {
   const [stateFilter, setStateFilter] = useState("");
   const [zip, setZip] = useState("");
   const [mapOpen, setMapOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const hasActiveFilters = Boolean(
     minPrice || maxPrice || minBeds || minBaths || minSqft || city.trim() || stateFilter.trim() || zip.trim()
@@ -134,6 +137,17 @@ export default function ListingsPage() {
 
   if (!user) return null;
 
+  const clearFilters = () => {
+    setMinPrice("");
+    setMaxPrice("");
+    setMinBeds("");
+    setMinBaths("");
+    setMinSqft("");
+    setCity("");
+    setStateFilter("");
+    setZip("");
+  };
+
   const filteredHomes = (homes ?? []).filter((home) => {
     const price = home.Price ?? 0;
     const bedrooms = home.Bedrooms ?? 0;
@@ -206,13 +220,141 @@ export default function ListingsPage() {
 
       <div className="container max-w-5xl pb-10">
         <div className="flex justify-between items-center gap-4 mb-6">
-          <div className="flex-1 max-w-md">
+          <div className="flex-1 max-w-md flex items-center gap-2">
             <Input
               placeholder="Search saved homes by address, city, price, etc."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="bg-background"
             />
+            <Dialog open={filtersOpen} onOpenChange={setFiltersOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={hasActiveFilters ? "border-primary text-primary" : undefined}
+                  aria-label="Filters"
+                >
+                  <SlidersHorizontal className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Filters</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="w-[min(92vw,760px)] max-w-none p-4">
+                <div className="mb-3 flex items-center justify-between gap-2 pr-10">
+                  <h2 className="text-sm font-medium text-muted-foreground">Filter saved homes</h2>
+                  <Button variant="outline" size="sm" onClick={clearFilters} disabled={!hasActiveFilters}>
+                    Clear filters
+                  </Button>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground" htmlFor="minPrice">
+                      Min price
+                    </label>
+                    <input
+                      id="minPrice"
+                      type="number"
+                      inputMode="numeric"
+                      className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                      value={minPrice}
+                      onChange={(e) => setMinPrice(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground" htmlFor="maxPrice">
+                      Max price
+                    </label>
+                    <input
+                      id="maxPrice"
+                      type="number"
+                      inputMode="numeric"
+                      className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                      value={maxPrice}
+                      onChange={(e) => setMaxPrice(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground" htmlFor="minBeds">
+                      Min beds
+                    </label>
+                    <input
+                      id="minBeds"
+                      type="number"
+                      inputMode="numeric"
+                      className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                      value={minBeds}
+                      onChange={(e) => setMinBeds(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground" htmlFor="minBaths">
+                      Min baths
+                    </label>
+                    <input
+                      id="minBaths"
+                      type="number"
+                      inputMode="numeric"
+                      className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                      value={minBaths}
+                      onChange={(e) => setMinBaths(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground" htmlFor="minSqft">
+                      Min square feet
+                    </label>
+                    <input
+                      id="minSqft"
+                      type="number"
+                      inputMode="numeric"
+                      className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                      value={minSqft}
+                      onChange={(e) => setMinSqft(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground" htmlFor="city">
+                      City
+                    </label>
+                    <input
+                      id="city"
+                      type="text"
+                      className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground" htmlFor="state">
+                      State
+                    </label>
+                    <input
+                      id="state"
+                      type="text"
+                      className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                      value={stateFilter}
+                      onChange={(e) => setStateFilter(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium text-muted-foreground" htmlFor="zip">
+                      Zip
+                    </label>
+                    <input
+                      id="zip"
+                      type="text"
+                      inputMode="numeric"
+                      className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
+                      value={zip}
+                      onChange={(e) => setZip(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                  <Button onClick={() => setFiltersOpen(false)}>Apply filters</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
           <div className="hidden sm:flex">
             <Button onClick={() => setAddOpen(true)}>

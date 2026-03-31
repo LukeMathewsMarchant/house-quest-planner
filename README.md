@@ -344,6 +344,7 @@ The feature adds `HomeState` to `Progress`.
 * Search bar for homes
 * Add house
 * fliter listings
+* Savings suggestion system
 * Edit house listing
 * It opens in zillow
 * Completed removing an extra "Add Home" button from the listings page
@@ -381,6 +382,7 @@ The feature adds `HomeState` to `Progress`.
 * Removed extra add button.
 * Added a tooltip to help users with setting up accounts
 * Added a way to edit money saved
+* Savings suggestion system
 
 
 

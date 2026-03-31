@@ -12,6 +12,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { getProgress, addContribution, getMortgageRates } from "@/lib/api";
+import { calculateAffordabilityTimeline } from "@/lib/affordability";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -80,6 +81,38 @@ export default function DashboardPage() {
   const monthlySavings =
     monthlyIncome != null && monthlyExpenses != null ? monthlyIncome - monthlyExpenses : null;
   const monthlyContribution = progress?.contributionGoal ?? null;
+  const timeHorizon = progress?.timeHorizon ?? null;
+  const remainingSavings = Math.max(0, downPaymentGoal - saved);
+
+  function timeHorizonToMonths(value: string | null): number | null {
+    if (!value) return null;
+    const map: Record<string, number> = {
+      "3-months": 3,
+      "6-months": 6,
+      "1-year": 12,
+      "2-years": 24,
+      "3-years": 36,
+      "5-years": 60,
+    };
+    if (value === "exploring") return null;
+    return map[value] ?? null;
+  }
+
+  function formatMonthsAsYearsMonths(months: number): string {
+    const years = Math.floor(months / 12);
+    const remainingMonths = months % 12;
+    if (years <= 0) return `${months} month${months === 1 ? "" : "s"}`;
+    if (remainingMonths === 0) return `${years} year${years === 1 ? "" : "s"}`;
+    return `${years} year${years === 1 ? "" : "s"} ${remainingMonths} month${remainingMonths === 1 ? "" : "s"}`;
+  }
+
+  const timelineMonths = timeHorizonToMonths(timeHorizon);
+  const currentTimeline = calculateAffordabilityTimeline(remainingSavings, monthlyContribution);
+  const timelineGoalLabel = timelineMonths != null ? formatMonthsAsYearsMonths(timelineMonths) : null;
+  const requiredMonthly =
+    remainingSavings > 0 && timelineMonths ? remainingSavings / timelineMonths : null;
+  const deltaMonthly =
+    requiredMonthly != null && monthlyContribution != null ? requiredMonthly - monthlyContribution : null;
 
   return (
     <div className="container py-10 max-w-3xl">
@@ -191,8 +224,59 @@ export default function DashboardPage() {
           </div>
         </motion.div>
 
-        {/* Mortgage rate estimate */}
+        {/* Savings needed to hit timeline */}
         <motion.div variants={fadeUp} custom={4} className="bg-card rounded-xl p-6 shadow-card">
+          <h3 className="text-sm font-medium text-muted-foreground mb-2">
+            Savings needed to hit your timeline
+          </h3>
+
+          {remainingSavings <= 0 ? (
+            <p className="text-base font-semibold">You&apos;ve hit your down payment goal.</p>
+          ) : monthlyContribution == null || monthlyContribution <= 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Set your monthly contribution goal in Profile to see timeline estimates.
+            </p>
+          ) : timelineMonths == null ? (
+            <p className="text-sm text-muted-foreground">
+              Select a timeline in Profile to see the monthly savings target.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              <div className="flex items-end gap-3">
+                <p className="text-3xl font-bold text-primary">
+                  ${Math.round(requiredMonthly ?? 0).toLocaleString()}/mo
+                </p>
+              </div>
+              {currentTimeline?.label && (
+                <p className="text-sm text-muted-foreground">
+                  At your current savings rate, you&apos;d reach your down payment goal in {currentTimeline.label}.
+                </p>
+              )}
+              {timelineGoalLabel && (
+                <p className="text-sm text-muted-foreground">
+                  Your timeline goal is to reach your down payment in {timelineGoalLabel}.
+                </p>
+              )}
+              {requiredMonthly != null && deltaMonthly != null && Math.abs(deltaMonthly) > 0.01 ? (
+                <p className="text-sm text-muted-foreground">
+                  To hit your timeline, you&apos;d need to save about $
+                  {Math.round(requiredMonthly).toLocaleString()}/mo (about{" "}
+                  <span className={deltaMonthly >= 0 ? "text-primary" : "text-destructive"}>
+                    {deltaMonthly >= 0 ? "+" : "-"}${Math.round(Math.abs(deltaMonthly)).toLocaleString()}/mo
+                  </span>{" "}
+                  more than you&apos;re saving now).
+                </p>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  To hit your timeline, you can keep your monthly savings rate and stay on track.
+                </p>
+              )}
+            </div>
+          )}
+        </motion.div>
+
+        {/* Mortgage rate estimate */}
+        <motion.div variants={fadeUp} custom={5} className="bg-card rounded-xl p-6 shadow-card">
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
@@ -243,7 +327,7 @@ export default function DashboardPage() {
         </motion.div>
 
         {/* CTA buttons */}
-        <motion.div variants={fadeUp} custom={5} className="grid sm:grid-cols-2 gap-4">
+        <motion.div variants={fadeUp} custom={6} className="grid sm:grid-cols-2 gap-4">
           <Button asChild size="lg" className="h-auto py-4 justify-start gap-3">
             <Link to="/listings">
               <Building2 className="h-5 w-5" />
