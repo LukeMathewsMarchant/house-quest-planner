@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion, type Variants } from "framer-motion";
-import { Home as HomeIcon, Pencil, Trash2, MapPin } from "lucide-react";
+import { Home as HomeIcon, Pencil, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -43,9 +43,6 @@ export function HomeCard({
   const progressPercent = target > 0 ? Math.min(100, (saved / target) * 100) : 0;
 
   const cityState = [home.City, home.State].filter(Boolean).join(", ");
-  const mapsQuery = encodeURIComponent(
-    [home.StreetAddress, home.City, home.State, home.Zip].filter(Boolean).join(", ")
-  );
 
   return (
     <motion.div
@@ -163,17 +160,6 @@ export function HomeCard({
                 </a>
               )}
             </div>
-            {mapsQuery && (
-              <a
-                href={`https://www.google.com/maps/search/?api=1&query=${mapsQuery}`}
-                target="_blank"
-                rel="noreferrer"
-                className="w-full inline-flex items-center justify-center rounded-md border border-input bg-background text-sm font-medium h-9 px-3 py-1.5 hover:bg-accent hover:text-accent-foreground transition-colors gap-2"
-              >
-                <MapPin className="h-4 w-4" />
-                View on Map
-              </a>
-            )}
             <div className="flex gap-2">
               <Button
                 type="button"

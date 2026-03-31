@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import { Bed, Bath, Square, MapPin, ArrowLeft, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { SingleHomeMap } from "@/components/saved-homes/SingleHomeMap";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
 import { getHome, getProgress, type Home as HomeType } from "@/lib/api";
@@ -102,9 +101,6 @@ export default function HouseDetailsPage() {
   const progressPercent = downPaymentNeeded > 0 ? Math.min(100, (progress.amountSaved / downPaymentNeeded) * 100) : 0;
 
   const cityState = [home.City, home.State].filter(Boolean).join(", ");
-  const fullAddress = [home.StreetAddress, home.City, home.State, home.Zip]
-    .filter(Boolean)
-    .join(", ");
 
   return (
     <div className="container py-10 max-w-5xl">
@@ -254,28 +250,8 @@ export default function HouseDetailsPage() {
           </Card>
         </motion.div>
 
-        {fullAddress && (
-          <motion.div variants={fadeUp} custom={4}>
-            <Card className="shadow-card overflow-hidden">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <MapPin className="h-5 w-5 text-primary" />
-                  Location
-                </CardTitle>
-                <CardDescription>{fullAddress}</CardDescription>
-              </CardHeader>
-              <CardContent className="pt-0 pb-0">
-                <SingleHomeMap
-                  address={fullAddress}
-                  className="h-[300px] rounded-b-xl -mx-6 -mb-0"
-                />
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-
         {home.ZillowURL && (
-          <motion.div variants={fadeUp} custom={5} className="flex justify-between items-center gap-4">
+          <motion.div variants={fadeUp} custom={4} className="flex justify-between items-center gap-4">
             <div className="text-xs text-muted-foreground">
               Want to review the full listing details? Open this home on Zillow.
             </div>
