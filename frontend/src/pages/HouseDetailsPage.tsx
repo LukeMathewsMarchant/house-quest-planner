@@ -113,7 +113,8 @@ export default function HouseDetailsPage() {
         </motion.div>
 
         <motion.div variants={fadeUp} custom={1} className="space-y-2">
-          <h1 className="text-3xl md:text-4xl font-bold">{home.StreetAddress}</h1>
+          <h1 className="text-3xl md:text-4xl font-bold">{home.Title || home.StreetAddress}</h1>
+          {home.Title && <p className="text-sm text-muted-foreground">{home.StreetAddress}</p>}
           <div className="flex items-center text-muted-foreground gap-2">
             <MapPin className="h-4 w-4" />
             <span className="text-sm">{cityState}</span>

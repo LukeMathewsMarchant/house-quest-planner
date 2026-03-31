@@ -57,7 +57,8 @@ export function HomeCard({
               <HomeIcon className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <CardTitle className="text-base mb-1">{home.StreetAddress}</CardTitle>
+              <CardTitle className="text-base mb-1">{home.Title || home.StreetAddress}</CardTitle>
+              <CardDescription className="text-xs">{home.StreetAddress}</CardDescription>
               <CardDescription className="text-xs">{cityState}</CardDescription>
             </div>
           </div>

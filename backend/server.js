@@ -308,6 +308,7 @@ app.post("/api/progress/contribution", getUserId, async (req, res) => {
 app.post("/api/homes", getUserId, async (req, res) => {
   try {
     const {
+      title,
       zillowUrl,
       streetAddress,
       city,
@@ -321,12 +322,13 @@ app.post("/api/homes", getUserId, async (req, res) => {
 
     const homeResult = await pool.query(
       `INSERT INTO "Homes" (
-        "StreetAddress", "City", "State", "Zip",
+        "Title", "StreetAddress", "City", "State", "Zip",
         "Price", "Bedrooms", "Bathrooms", "SquareFeet", "ZillowURL"
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-      RETURNING "HomeID", "StreetAddress", "City", "State", "Zip",
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      RETURNING "HomeID", "Title", "StreetAddress", "City", "State", "Zip",
                 "Price", "Bedrooms", "Bathrooms", "SquareFeet", "ZillowURL"`,
       [
+        title ? String(title).trim() : null,
         streetAddress,
         city,
         state,
@@ -364,6 +366,7 @@ app.put("/api/homes/:homeId", getUserId, async (req, res) => {
     }
 
     const {
+      title,
       zillowUrl,
       streetAddress,
       city,
@@ -385,19 +388,21 @@ app.put("/api/homes/:homeId", getUserId, async (req, res) => {
 
     const { rows } = await pool.query(
       `UPDATE "Homes" SET
-        "StreetAddress" = $1,
-        "City" = $2,
-        "State" = $3,
-        "Zip" = $4,
-        "Price" = $5,
-        "Bedrooms" = $6,
-        "Bathrooms" = $7,
-        "SquareFeet" = $8,
-        "ZillowURL" = $9
-      WHERE "HomeID" = $10
-      RETURNING "HomeID", "StreetAddress", "City", "State", "Zip",
+        "Title" = $1,
+        "StreetAddress" = $2,
+        "City" = $3,
+        "State" = $4,
+        "Zip" = $5,
+        "Price" = $6,
+        "Bedrooms" = $7,
+        "Bathrooms" = $8,
+        "SquareFeet" = $9,
+        "ZillowURL" = $10
+      WHERE "HomeID" = $11
+      RETURNING "HomeID", "Title", "StreetAddress", "City", "State", "Zip",
                 "Price", "Bedrooms", "Bathrooms", "SquareFeet", "ZillowURL"`,
       [
+        title ? String(title).trim() : null,
         streetAddress ?? null,
         city ?? null,
         state ?? null,
@@ -466,7 +471,7 @@ app.get("/api/wishlist/:userId", getUserId, async (req, res) => {
     }
 
     const { rows } = await pool.query(
-      `SELECT h."HomeID", h."StreetAddress", h."City", h."State", h."Zip",
+      `SELECT h."HomeID", h."Title", h."StreetAddress", h."City", h."State", h."Zip",
               h."Price", h."Bedrooms", h."Bathrooms", h."SquareFeet", h."ZillowURL"
        FROM "WishList" w
        JOIN "Homes" h ON h."HomeID" = w."HomeID"
@@ -491,7 +496,7 @@ app.get("/api/homes/:homeId", async (req, res) => {
     }
 
     const { rows } = await pool.query(
-      `SELECT "HomeID", "StreetAddress", "City", "State", "Zip",
+      `SELECT "HomeID", "Title", "StreetAddress", "City", "State", "Zip",
               "Price", "Bedrooms", "Bathrooms", "SquareFeet", "ZillowURL"
        FROM "Homes"
        WHERE "HomeID" = $1`,

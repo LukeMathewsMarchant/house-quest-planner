@@ -99,6 +99,7 @@ function parseListingUrl(url: string): Partial<HouseFormValues> {
 }
 
 export type HouseFormValues = {
+  title: string;
   zillowUrl: string;
   streetAddress: string;
   city: string;
@@ -132,6 +133,7 @@ export function AddHouseModal({
   initialValues = null,
 }: Props) {
   const [zillowUrl, setZillowUrl] = useState("");
+  const [houseTitle, setHouseTitle] = useState("");
   const [streetAddress, setStreetAddress] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
@@ -146,6 +148,7 @@ export function AddHouseModal({
 
   const reset = () => {
     setZillowUrl("");
+    setHouseTitle("");
     setStreetAddress("");
     setCity("");
     setState("");
@@ -161,6 +164,7 @@ export function AddHouseModal({
     if (!open) return;
     if (!initialValues) return;
     setZillowUrl(initialValues.zillowUrl ?? "");
+    setHouseTitle(initialValues.title ?? "");
     setStreetAddress(initialValues.streetAddress ?? "");
     setCity(initialValues.city ?? "");
     setState(initialValues.state ?? "");
@@ -173,8 +177,9 @@ export function AddHouseModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!streetAddress || !city || !state || !price) return;
+    if (!houseTitle.trim() || !streetAddress || !city || !state || !price) return;
     onSubmit({
+      title: houseTitle.trim(),
       zillowUrl,
       streetAddress,
       city,
@@ -201,6 +206,16 @@ export function AddHouseModal({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="house-title">House title</Label>
+            <Input
+              id="house-title"
+              placeholder="Starter Home in Boise"
+              value={houseTitle}
+              onChange={(e) => setHouseTitle(e.target.value)}
+              required
+            />
+          </div>
           <div className="space-y-2">
             <Label htmlFor="zillow-url">Zillow/Web listing link</Label>
             <Input

@@ -63,6 +63,7 @@ function progressHeaders(userId: number) {
 
 export type Home = {
   HomeID: number;
+  Title: string | null;
   StreetAddress: string;
   City: string;
   State: string;
@@ -127,6 +128,7 @@ export async function addContribution(
 export async function createHome(
   userId: number,
   body: {
+    title: string;
     zillowUrl: string;
     streetAddress: string;
     city: string;
@@ -152,6 +154,7 @@ export async function updateHome(
   userId: number,
   homeId: number,
   body: {
+    title: string;
     zillowUrl: string;
     streetAddress: string;
     city: string;

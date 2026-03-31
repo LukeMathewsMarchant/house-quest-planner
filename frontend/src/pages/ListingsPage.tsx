@@ -180,6 +180,7 @@ export default function ListingsPage() {
 
     if (!query) return true;
     const fields: Array<string | number | null | undefined> = [
+      home.Title,
       home.StreetAddress,
       home.City,
       home.State,
@@ -477,6 +478,7 @@ export default function ListingsPage() {
             editHome
               ? {
                   zillowUrl: editHome.ZillowURL ?? "",
+                  title: editHome.Title ?? "",
                   streetAddress: editHome.StreetAddress ?? "",
                   city: editHome.City ?? "",
                   state: editHome.State ?? "",

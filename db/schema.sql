@@ -36,6 +36,7 @@ CREATE TABLE "Progress" (
 -- Homes table (referenced by WishList)
 CREATE TABLE "Homes" (
   "HomeID" SERIAL PRIMARY KEY,
+  "Title" VARCHAR(120),
   "Bedrooms" INTEGER,
   "Bathrooms" INTEGER,
   "Price" INTEGER,
