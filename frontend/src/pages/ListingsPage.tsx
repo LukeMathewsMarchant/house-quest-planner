@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Home as HomeIcon, Plus, Map, ChevronDown, ChevronUp } from "lucide-react";
 import { Home as HomeIcon, Plus, SlidersHorizontal } from "lucide-react";
 import heroHome from "@/assets/hero-home.jpg";
 import { Button } from "@/components/ui/button";
@@ -27,7 +26,6 @@ import {
 } from "@/lib/affordability";
 import { AddHouseModal, type HouseFormValues } from "@/components/saved-homes/AddHouseModal";
 import { HomeCard } from "@/components/saved-homes/HomeCard";
-import { HomesMap } from "@/components/saved-homes/HomesMap";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -60,7 +58,6 @@ export default function ListingsPage() {
   const [city, setCity] = useState("");
   const [stateFilter, setStateFilter] = useState("");
   const [zip, setZip] = useState("");
-  const [mapOpen, setMapOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const hasActiveFilters = Boolean(
@@ -370,161 +367,6 @@ export default function ListingsPage() {
             Add House
           </Button>
         </div>
-
-        <div className="mb-6 rounded-xl border bg-card p-4 shadow-sm">
-          <div className="mb-3 flex items-center justify-between gap-2">
-            <h2 className="text-sm font-medium text-muted-foreground">Filter saved homes</h2>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setMinPrice("");
-                setMaxPrice("");
-                setMinBeds("");
-                setMinBaths("");
-                setMinSqft("");
-                setCity("");
-                setStateFilter("");
-                setZip("");
-              }}
-            >
-              Clear filters
-            </Button>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground" htmlFor="minPrice">
-                Min price
-              </label>
-              <input
-                id="minPrice"
-                type="number"
-                inputMode="numeric"
-                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-                value={minPrice}
-                onChange={(e) => setMinPrice(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground" htmlFor="maxPrice">
-                Max price
-              </label>
-              <input
-                id="maxPrice"
-                type="number"
-                inputMode="numeric"
-                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground" htmlFor="minBeds">
-                Min beds
-              </label>
-              <input
-                id="minBeds"
-                type="number"
-                inputMode="numeric"
-                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-                value={minBeds}
-                onChange={(e) => setMinBeds(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground" htmlFor="minBaths">
-                Min baths
-              </label>
-              <input
-                id="minBaths"
-                type="number"
-                inputMode="numeric"
-                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-                value={minBaths}
-                onChange={(e) => setMinBaths(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground" htmlFor="minSqft">
-                Min square feet
-              </label>
-              <input
-                id="minSqft"
-                type="number"
-                inputMode="numeric"
-                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-                value={minSqft}
-                onChange={(e) => setMinSqft(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground" htmlFor="city">
-                City
-              </label>
-              <input
-                id="city"
-                type="text"
-                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground" htmlFor="state">
-                State
-              </label>
-              <input
-                id="state"
-                type="text"
-                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-                value={stateFilter}
-                onChange={(e) => setStateFilter(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground" htmlFor="zip">
-                Zip
-              </label>
-              <input
-                id="zip"
-                type="text"
-                inputMode="numeric"
-                className="w-full rounded-md border bg-background px-2 py-1.5 text-sm"
-                value={zip}
-                onChange={(e) => setZip(e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-
-        {(homes?.length ?? 0) > 0 && (
-          <div className="mb-6 rounded-xl border bg-card shadow-sm overflow-hidden">
-            <button
-              type="button"
-              onClick={() => setMapOpen(!mapOpen)}
-              className="w-full flex items-center justify-between gap-2 px-4 py-3 text-left hover:bg-accent/50 transition-colors"
-            >
-              <div className="flex items-center gap-2">
-                <Map className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium">Map View</span>
-                <span className="text-xs text-muted-foreground">
-                  — See where your saved homes are located
-                </span>
-              </div>
-              {mapOpen ? (
-                <ChevronUp className="h-4 w-4 text-muted-foreground" />
-              ) : (
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
-              )}
-            </button>
-            {mapOpen && (
-              <HomesMap
-                homes={filteredHomes}
-                className="h-[400px] border-t"
-              />
-            )}
-          </div>
-        )}
 
         {loadingHomes ? (
           <p className="text-muted-foreground">Loading your saved homes…</p>
