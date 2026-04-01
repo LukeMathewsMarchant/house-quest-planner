@@ -76,7 +76,7 @@ export default function OKRPage() {
         <motion.div variants={fadeUp} custom={0}>
           <h1 className="text-3xl font-bold mb-2">Admin OKR</h1>
           <p className="text-muted-foreground">
-            Automatically tracks how many users are fully reaching their contribution goal.
+            Automatically tracks how many users are fully reaching their downpayment goal.
           </p>
         </motion.div>
 
