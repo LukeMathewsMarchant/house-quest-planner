@@ -77,16 +77,22 @@ export default function OnboardingPage() {
     setDownPaymentPct(
       progress.downPaymentPercentage != null ? String(progress.downPaymentPercentage) : ""
     );
-    setMonthlyIncome(progress.monthlyIncome != null ? String(progress.monthlyIncome) : "");
-    setMonthlyExpenses(progress.monthlyExpenses != null ? String(progress.monthlyExpenses) : "");
+    const income = progress.monthlyIncome;
+    const expenses = progress.monthlyExpenses;
+    setMonthlyIncome(income != null ? String(income) : "");
+    setMonthlyExpenses(expenses != null ? String(expenses) : "");
+    if (progress.contributionGoal != null) {
+      setMonthlyContribution(String(progress.contributionGoal));
+    } else if (income != null && expenses != null) {
+      setMonthlyContribution(String(income - expenses));
+    } else {
+      setMonthlyContribution("");
+    }
     setCreditScore([progress.creditScore ?? 720]);
     setTimeHorizon(progress.timeHorizon ?? "");
     setHomeState(progress.homeState ?? "");
     setZipCodes(progress.desiredZipCodes ?? "");
     setAmountAlreadySaved(progress.amountSaved ? String(Math.round(progress.amountSaved)) : "");
-    setMonthlyContribution(
-      progress.contributionGoal != null ? String(progress.contributionGoal) : ""
-    );
   }, [user, progress, navigate]);
 
   const completeMutation = useMutation({
@@ -273,15 +279,15 @@ export default function OnboardingPage() {
                 <TrendingUp className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold">Monthly finances</h2>
+                <h2 className="text-lg font-semibold">Monthly Finances</h2>
                 <p className="text-sm text-muted-foreground">
-                  Your income, expenses, and how much you&apos;ll put toward your down payment each month.
+                  Your income, expenses, and how much you&apos;ll set aside for your down payment each month.
                 </p>
               </div>
             </div>
-            <div className="grid sm:grid-cols-3 gap-4">
+            <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="monthly-income">Monthly income</Label>
+                <Label htmlFor="monthly-income">Monthly Income</Label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
                   <Input
@@ -296,25 +302,7 @@ export default function OnboardingPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="monthly-contribution">Monthly contribution toward down payment</Label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
-                  <Input
-                    id="monthly-contribution"
-                    type="number"
-                    value={monthlyContribution}
-                    onChange={(e) => setMonthlyContribution(e.target.value)}
-                    className="pl-7"
-                    placeholder={monthlySavings != null ? String(monthlySavings) : "500"}
-                    min="0"
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  This drives the &quot;time until affordable&quot; estimates for your saved homes.
-                </p>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="monthly-expenses">Monthly expenses</Label>
+                <Label htmlFor="monthly-expenses">Monthly Expenses</Label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
                   <Input
@@ -329,14 +317,41 @@ export default function OnboardingPage() {
                 </div>
               </div>
             </div>
-            {monthlySavings != null && (
-              <p className="text-sm text-muted-foreground pt-2 border-t">
-                Monthly savings:{" "}
+
+            <div className="pt-2 border-t space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Estimated monthly savings:{" "}
                 <span className="font-semibold text-foreground">
-                  ${monthlySavings.toLocaleString()}
+                  {monthlySavings != null ? `$${monthlySavings.toLocaleString()}` : "—"}
                 </span>
+                <span className="text-xs text-muted-foreground"> (income − expenses)</span>
               </p>
-            )}
+
+              <div className="space-y-2">
+                <Label htmlFor="monthly-contribution">
+                  How much of your monthly savings would you like to contribute toward your down payment?
+                </Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                  <Input
+                    id="monthly-contribution"
+                    type="number"
+                    value={monthlyContribution}
+                    onChange={(e) => setMonthlyContribution(e.target.value)}
+                    className="pl-7"
+                    placeholder={monthlySavings != null ? String(monthlySavings) : "500"}
+                    min="0"
+                    max={monthlySavings != null && monthlySavings > 0 ? monthlySavings : undefined}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  This is the amount we use to estimate your timeline on the Dashboard.
+                  {monthlySavings != null && monthlySavings > 0
+                    ? ` (Your estimated savings are $${monthlySavings.toLocaleString()}/mo.)`
+                    : ""}
+                </p>
+              </div>
+            </div>
           </motion.div>
 
           {/* Credit Score */}
