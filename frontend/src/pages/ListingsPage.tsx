@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Home as HomeIcon, Plus, SlidersHorizontal } from "lucide-react";
+import { Home as HomeIcon, Plus, SlidersHorizontal, ExternalLink } from "lucide-react";
 import heroHome from "@/assets/hero-home.jpg";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -353,6 +353,17 @@ export default function ListingsPage() {
                 </div>
               </DialogContent>
             </Dialog>
+            <Button variant="outline" asChild>
+              <a
+                href="https://www.zillow.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Browse homes on Zillow (opens in a new tab)"
+              >
+                <ExternalLink className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Browse Homes</span>
+              </a>
+            </Button>
           </div>
           <div className="hidden sm:flex">
             <Button onClick={() => setAddOpen(true)}>
