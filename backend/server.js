@@ -30,6 +30,22 @@ async function requireAdmin(req, res, next) {
       'SELECT "UserRole" FROM "Users" WHERE "UserID" = $1',
       [req.userId]
     );
+    if (rows[0]?.UserRole !== "A") {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+    next();
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to verify admin access" });
+  }
+}
+
+async function requireAdmin(req, res, next) {
+  try {
+    const { rows } = await pool.query(
+      'SELECT "UserRole" FROM "Users" WHERE "UserID" = $1',
+      [req.userId]
+    );
     const role = rows[0]?.UserRole;
     if (role !== "A") {
       return res.status(403).json({ error: "Admin access required" });
@@ -281,6 +297,32 @@ app.get("/api/mortgage-rates", getUserId, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch mortgage rates" });
+  }
+});
+
+app.get("/api/admin/okr", getUserId, requireAdmin, async (_req, res) => {
+  try {
+    const { rows } = await pool.query(`
+      SELECT
+        COUNT(*) FILTER (
+          WHERE p."ContributionGoal" IS NOT NULL AND p."ContributionGoal" > 0
+        )::int AS "qualifiedUsers",
+        COUNT(*) FILTER (
+          WHERE p."ContributionGoal" IS NOT NULL
+            AND p."ContributionGoal" > 0
+            AND COALESCE(p."AmountSaved", 0) >= p."ContributionGoal"
+        )::int AS "completedUsers"
+      FROM "Users" u
+      LEFT JOIN "Progress" p ON p."UserID" = u."UserID"
+    `);
+    const row = rows[0] ?? {};
+    const qualifiedUsers = Number(row.qualifiedUsers ?? 0);
+    const completedUsers = Number(row.completedUsers ?? 0);
+    const completionRate = qualifiedUsers > 0 ? (completedUsers / qualifiedUsers) * 100 : 0;
+    res.json({ qualifiedUsers, completedUsers, completionRate });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch OKR metric" });
   }
 });
 
