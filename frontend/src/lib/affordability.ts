@@ -1,3 +1,25 @@
+/**
+ * Monthly amount the user saves toward the down payment.
+ * Heals legacy DB rows where ContributionGoal was mistakenly set to the full down-payment dollar total.
+ */
+export function effectiveMonthlyDownPaymentContribution(
+  contributionGoal: number | null | undefined,
+  downPaymentDollarGoal: number,
+  monthlyIncome: number | null | undefined,
+  monthlyExpenses: number | null | undefined,
+): number | null {
+  const inferred =
+    monthlyIncome != null && monthlyExpenses != null ? monthlyIncome - monthlyExpenses : null;
+  if (contributionGoal == null || contributionGoal <= 0) return inferred;
+  if (
+    downPaymentDollarGoal > 0 &&
+    contributionGoal >= downPaymentDollarGoal - 1e-6
+  ) {
+    return inferred;
+  }
+  return contributionGoal;
+}
+
 export function calculateDownPayment(price: number | null, downPaymentPercentage: number | null): number {
   if (!price || !downPaymentPercentage || downPaymentPercentage <= 0) return 0;
   return (price * downPaymentPercentage) / 100;

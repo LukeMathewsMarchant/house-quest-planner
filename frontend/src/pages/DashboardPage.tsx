@@ -12,7 +12,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { getProgress, addContribution, getMortgageRates } from "@/lib/api";
-import { calculateAffordabilityTimeline } from "@/lib/affordability";
+import {
+  calculateAffordabilityTimeline,
+  effectiveMonthlyDownPaymentContribution,
+} from "@/lib/affordability";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -80,7 +83,12 @@ export default function DashboardPage() {
   const monthlyExpenses = progress?.monthlyExpenses ?? null;
   const monthlySavings =
     monthlyIncome != null && monthlyExpenses != null ? monthlyIncome - monthlyExpenses : null;
-  const monthlyContribution = progress?.contributionGoal ?? null;
+  const monthlyContribution = effectiveMonthlyDownPaymentContribution(
+    progress?.contributionGoal,
+    downPaymentGoal,
+    monthlyIncome,
+    monthlyExpenses,
+  );
   const timeHorizon = progress?.timeHorizon ?? null;
   const remainingSavings = Math.max(0, downPaymentGoal - saved);
 

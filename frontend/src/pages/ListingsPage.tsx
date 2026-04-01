@@ -23,6 +23,7 @@ import {
   calculateAffordabilityTimeline,
   calculateSavingsNeededForTimeline,
   calculateMonthlyPayment,
+  effectiveMonthlyDownPaymentContribution,
 } from "@/lib/affordability";
 import { AddHouseModal, type HouseFormValues } from "@/components/saved-homes/AddHouseModal";
 import { HomeCard } from "@/components/saved-homes/HomeCard";
@@ -413,7 +414,16 @@ export default function ListingsPage() {
             {filteredHomes.map((home, index) => {
               const downPaymentNeeded = calculateDownPayment(home.Price ?? 0, progress?.downPaymentPercentage ?? null);
               const remainingSavings = calculateRemainingSavings(downPaymentNeeded, progress?.amountSaved);
-              const monthlySavings = progress?.contributionGoal ?? null;
+              const profileDownPaymentGoal = calculateDownPayment(
+                progress?.budget ?? null,
+                progress?.downPaymentPercentage ?? null,
+              );
+              const monthlySavings = effectiveMonthlyDownPaymentContribution(
+                progress?.contributionGoal,
+                profileDownPaymentGoal,
+                progress?.monthlyIncome ?? null,
+                progress?.monthlyExpenses ?? null,
+              );
               const timeline = calculateAffordabilityTimeline(remainingSavings, monthlySavings);
               const savingsNeeded = calculateSavingsNeededForTimeline(remainingSavings, progress?.timeHorizon);
               const timelineSavingsNeededLabel = savingsNeeded

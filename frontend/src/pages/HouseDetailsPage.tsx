@@ -13,6 +13,7 @@ import {
   calculateRemainingSavings,
   calculateAffordabilityTimeline,
   calculateSavingsNeededForTimeline,
+  effectiveMonthlyDownPaymentContribution,
 } from "@/lib/affordability";
 
 const fadeUp = {
@@ -77,7 +78,13 @@ export default function HouseDetailsPage() {
 
   const downPaymentNeeded = calculateDownPayment(home.Price ?? 0, progress.downPaymentPercentage);
   const remainingSavings = calculateRemainingSavings(downPaymentNeeded, progress.amountSaved);
-  const monthlySavings = progress.contributionGoal ?? null;
+  const profileDownPaymentGoal = calculateDownPayment(progress.budget, progress.downPaymentPercentage);
+  const monthlySavings = effectiveMonthlyDownPaymentContribution(
+    progress.contributionGoal,
+    profileDownPaymentGoal,
+    progress.monthlyIncome,
+    progress.monthlyExpenses,
+  );
   const timeline = calculateAffordabilityTimeline(remainingSavings, monthlySavings);
   const savingsNeeded = calculateSavingsNeededForTimeline(remainingSavings, progress.timeHorizon);
   const timelineSavingsNeededLabel = savingsNeeded
@@ -226,8 +233,8 @@ export default function HouseDetailsPage() {
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Monthly savings toward down payment</span>
                 <span className="font-semibold">
-                  {progress.contributionGoal != null
-                    ? `$${Math.round(progress.contributionGoal).toLocaleString()}`
+                  {monthlySavings != null && monthlySavings > 0
+                    ? `$${Math.round(monthlySavings).toLocaleString()}`
                     : "Set in Profile"}
                 </span>
               </div>
