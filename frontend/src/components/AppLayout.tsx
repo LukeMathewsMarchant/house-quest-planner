@@ -1,18 +1,22 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, LayoutDashboard, Building2, GraduationCap, User, Menu, X, LogIn, LogOut } from "lucide-react";
+import { Home, LayoutDashboard, Building2, GraduationCap, User, Menu, X, LogIn, LogOut, Target } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 
 const navItemsBase = [
   { title: "Home", path: "/", icon: Home },
-  { title: "Saved Homes", path: "/listings", icon: Building2 },
+  { title: "Listings", path: "/listings", icon: Building2 },
   { title: "Tutorials", path: "/tutorials", icon: GraduationCap },
 ];
 
 const navItemsAuth = [
   { title: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
   { title: "Profile", path: "/profile", icon: User },
+];
+
+const navItemsAdmin = [
+  { title: "OKR", path: "/okr", icon: Target },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -51,6 +55,24 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             })}
             {user &&
               navItemsAuth.map((item) => {
+                const active = location.pathname === item.path;
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      active
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    }`}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    {item.title}
+                  </Link>
+                );
+              })}
+            {user?.UserRole === "A" &&
+              navItemsAdmin.map((item) => {
                 const active = location.pathname === item.path;
                 return (
                   <Link
@@ -146,6 +168,25 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 })}
                 {user &&
                   navItemsAuth.map((item) => {
+                    const active = location.pathname === item.path;
+                    return (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        onClick={() => setMenuOpen(false)}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors ${
+                          active
+                            ? "bg-primary/10 text-primary"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                        }`}
+                      >
+                        <item.icon className="h-5 w-5" />
+                        {item.title}
+                      </Link>
+                    );
+                  })}
+                {user?.UserRole === "A" &&
+                  navItemsAdmin.map((item) => {
                     const active = location.pathname === item.path;
                     return (
                       <Link

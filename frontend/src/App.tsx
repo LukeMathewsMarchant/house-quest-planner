@@ -14,6 +14,7 @@ import TutorialsPage from "./pages/TutorialsPage";
 import TutorialCategoryPage from "./pages/TutorialCategoryPage";
 import LoginPage from "./pages/LoginPage";
 import OnboardingPage from "./pages/OnboardingPage";
+import OKRPage from "./pages/OKRPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,8 +33,9 @@ const App = () => (
               <Route path="/onboarding" element={<OnboardingPage />} />
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/listings" element={<ListingsPage />} />
-              <Route path="/homes/:homeId" element={<HouseDetailsPage />} />
+              <Route path="/listings/:id" element={<HouseDetailsPage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/okr" element={<OKRPage />} />
               <Route path="/tutorials" element={<TutorialsPage />} />
               <Route path="/tutorials/:categoryId" element={<TutorialCategoryPage />} />
               <Route path="*" element={<NotFound />} />
