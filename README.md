@@ -175,6 +175,42 @@ The Add House form supports links from common real‑estate platforms, including
 * Roofstock
 * Zumper
 
+### OKR Page
+The app includes an admin-only OKR page at /okr.
+Purpose
+The OKR page gives admins a quick way to measure how well users are progressing toward their contribution goals. It is designed as a lightweight health metric for the savings side of the app.
+Who can access it
+Only users with UserRole = 'A' in the Users table can access the page.
+Admin users see the OKR tab in navigation
+Normal users do not see the tab
+If a non-admin visits /okr directly, they receive an Access Denied view
+What it shows
+The page automatically calculates one live metric from the database:
+Goal completion rate: the percentage of users with an active contribution goal whose AmountSaved is greater than or equal to ContributionGoal
+It also shows:
+number of users who have reached their goal
+number of users who currently have an active goal
+How it works
+The metric is calculated from existing data in the Progress table, so it updates automatically as users:
+update their profile and contribution goal
+add savings contributions in the dashboard
+No separate OKR table is required.
+Backend route
+The page uses an admin-protected backend endpoint:
+GET /api/admin/okr
+This route:
+validates the user from X-User-Id
+confirms the user has admin authority
+returns:
+qualifiedUsers
+completedUsers
+completionRate
+Frontend route
+The frontend page is available at:
+/okr
+and is implemented as an admin-only route using the logged-in user’s UserRole.
+If you want, I can also turn that into a shorter “project feature summary” version for class submission.
+
 ### Behavior
 When a user pastes a listing URL into the Zillow/Web listing link field, the application attempts to extract address details from the URL.
 If address information is found, the following fields are populated automatically:
@@ -383,6 +419,6 @@ The feature adds `HomeState` to `Progress`.
 * Added a tooltip to help users with setting up accounts
 * Added a way to edit money saved
 * Savings suggestion system
-
+* OKR Page 
 
 
