@@ -72,7 +72,7 @@ export default function LandingPage() {
             </motion.p>
             <motion.div variants={fadeUp} custom={2} className="flex flex-wrap gap-4">
               <Button variant="hero" size="lg" asChild>
-                <Link to="/login">
+                <Link to="/profile">
                   Start Your Journey <ArrowRight className="ml-1 h-5 w-5" />
                 </Link>
               </Button>
