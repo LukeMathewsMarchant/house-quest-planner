@@ -304,7 +304,12 @@ export default function DashboardPage() {
                 Based on your credit score and state profile data.
               </p>
             </div>
-            <Button variant="outline" size="sm" onClick={() => setShowRateSuggestions(true)}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="hover:bg-primary/10 hover:text-primary hover:border-primary/40"
+              onClick={() => setShowRateSuggestions(true)}
+            >
               How to improve
             </Button>
           </div>
@@ -345,7 +350,12 @@ export default function DashboardPage() {
               </div>
             </Link>
           </Button>
-          <Button asChild variant="outline" size="lg" className="h-auto py-4 justify-start gap-3">
+          <Button
+            asChild
+            variant="outline"
+            size="lg"
+            className="h-auto py-4 justify-start gap-3 hover:bg-primary/10 hover:text-primary hover:border-primary/40"
+          >
             <Link to="/profile">
               <DollarSign className="h-5 w-5" />
               <div className="text-left">
@@ -354,7 +364,12 @@ export default function DashboardPage() {
               </div>
             </Link>
           </Button>
-          <Button asChild variant="outline" size="lg" className="h-auto py-4 justify-start gap-3 sm:col-span-2">
+          <Button
+            asChild
+            variant="outline"
+            size="lg"
+            className="h-auto py-4 justify-start gap-3 sm:col-span-2 hover:bg-primary/10 hover:text-primary hover:border-primary/40"
+          >
             <Link to="/tutorials">
               <GraduationCap className="h-5 w-5" />
               <div className="text-left">
